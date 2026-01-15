@@ -1,1 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: "Space Grotesk", "Noto Sans KR", sans-serif;
+    color: #0f172a;
+    background-color: #ffffff;
+  }
+}
+
+@layer utilities {
+  .fade-in {
+    animation: fadeIn 600ms ease-out both;
+  }
+
+  .fade-up {
+    animation: fadeUp 700ms ease-out both;
+  }
+
+  .delay-120 {
+    animation-delay: 120ms;
+  }
+
+  .delay-240 {
+    animation-delay: 240ms;
+  }
+
+  .delay-360 {
+    animation-delay: 360ms;
+  }
+
+  .delay-480 {
+    animation-delay: 480ms;
+  }
+
+  .delay-600 {
+    animation-delay: 600ms;
+  }
+
+  .delay-720 {
+    animation-delay: 720ms;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
