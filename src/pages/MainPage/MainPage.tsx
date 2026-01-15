@@ -1,3 +1,5 @@
+import { Button, Dropdown } from '../../common'
+
 export default function MainPage() {
   return (
     <section className="mx-auto max-w-6xl px-6 py-10">
@@ -15,12 +17,18 @@ export default function MainPage() {
             </p>
           </div>
           <div className="flex items-center gap-3 text-xs text-slate-500">
-            <button className="rounded-full border border-slate-200 bg-white px-3 py-2">
+            <Button variant="outline" size="sm">
               필터 숨기기
-            </button>
-            <button className="rounded-full border border-slate-200 bg-white px-3 py-2">
-              정렬 기준: 추천순
-            </button>
+            </Button>
+            <Dropdown
+              label="정렬 기준: 추천순"
+              items={[
+                { label: '추천순' },
+                { label: '신상품' },
+                { label: '가격 낮은순' },
+                { label: '가격 높은순' },
+              ]}
+            />
           </div>
         </div>
       </div>
@@ -157,9 +165,9 @@ export default function MainPage() {
                 <p className="text-sm text-white/70">
                   레트로 그린 컬러로 완성한 시즌 무드.
                 </p>
-                <button className="w-fit rounded-full border border-white/40 px-4 py-2 text-xs uppercase tracking-wide">
+                <Button variant="outline" size="sm" className="border-white/40 text-white hover:bg-white/10">
                   스토리 보기
-                </button>
+                </Button>
               </div>
             </div>
           </article>
