@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+import type { ProductInput } from "../../product/type/product";
 import api from "../../utils/api";
-import type { ProductInput } from "./useCreateProduct";
 
 export interface ProductsResponse {
   status: string;

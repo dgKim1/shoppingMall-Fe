@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 type DropdownItem = {
   label: string
@@ -25,6 +25,7 @@ export default function Dropdown({
   trigger,
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement | null>(null)
   const toggle = () => setIsOpen((prev) => !prev)
   const buttonProps = {
     type: 'button' as const,
@@ -33,8 +34,27 @@ export default function Dropdown({
     onClick: toggle,
   }
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
+
   return (
-    <div className="relative inline-flex">
+    <div ref={containerRef} className="relative inline-flex">
       {trigger ? (
         trigger({ isOpen, toggle, buttonProps })
       ) : (
@@ -48,7 +68,7 @@ export default function Dropdown({
       {isOpen && (
         <div
           role="menu"
-          className={`absolute z-10 mt-2 w-40 rounded-xl border border-slate-200 bg-white p-2 text-sm text-slate-600 shadow-lg ${
+          className={`absolute z-20 mt-2 w-40 rounded-xl border border-slate-200 bg-white p-2 text-sm text-slate-600 shadow-lg ${
             align === 'right' ? 'right-0' : 'left-0'
           }`}
         >
