@@ -112,7 +112,7 @@ export default function MainPage() {
             !isError &&
             products.map((item, index) => (
               <ProductCard
-                key={item.sku}
+                key={`${item.sku}-${index}`}
                 product={item}
                 index={index}
                 priceLabel={formatPrice(item.price)}
