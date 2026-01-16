@@ -1,6 +1,12 @@
-import { Button, Dropdown } from '../../common'
+import { Button, Dropdown, FilterSidebar } from '../../common'
+import useGetAllProducts from '../../hooks/product/useGetAllProducts'
 
 export default function MainPage() {
+  const { data: productsResponse, isLoading, isError } = useGetAllProducts()
+  const products = productsResponse?.data ?? []
+  const formatPrice = (price: number) =>
+    `${new Intl.NumberFormat('ko-KR').format(price)} 원`
+
   return (
     <section className="mx-auto max-w-6xl px-6 py-10">
       <div className="fade-in">
@@ -10,7 +16,7 @@ export default function MainPage() {
         <div className="mt-4 flex flex-wrap items-center justify-between gap-6">
           <div>
             <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-              아스트로그래버 (11)
+              아스트로그래버 ({products.length})
             </h1>
             <p className="mt-2 text-sm text-slate-500">
               레트로 감성으로 완성한 데일리 스니커즈 컬렉션
@@ -34,123 +40,52 @@ export default function MainPage() {
       </div>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[220px_1fr]">
-        <aside className="fade-up space-y-6 text-sm text-slate-600">
-          {[
-            { title: '성별', items: ['남성', '여성', '남녀공용'] },
-            { title: '스포츠', items: ['라이프스타일'] },
-            {
-              title: '가격대',
-              items: ['100,000 - 150,000 원', '150,000 - 200,000 원'],
-            },
-            {
-              title: '브랜드',
-              items: ['나이키 스포츠웨어', 'NikeLab'],
-            },
-          ].map((group) => (
-            <div key={group.title} className="border-b border-slate-200 pb-4">
-              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
-                <span>{group.title}</span>
-                <span className="text-slate-400">˅</span>
-              </div>
-              <div className="mt-3 space-y-2">
-                {group.items.map((item) => (
-                  <label
-                    key={item}
-                    className="flex items-center gap-2 text-sm text-slate-600"
-                  >
-                    <input
-                      type="checkbox"
-                      className="h-3.5 w-3.5 rounded border-slate-300"
-                    />
-                    {item}
-                  </label>
-                ))}
-              </div>
-            </div>
-          ))}
-          <div className="border-b border-slate-200 pb-4">
-            <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
-              <span>색상</span>
-              <span className="text-slate-400">˅</span>
-            </div>
-            <div className="mt-3 grid grid-cols-4 gap-2">
-              {[
-                'bg-black',
-                'bg-white',
-                'bg-red-500',
-                'bg-emerald-500',
-                'bg-sky-500',
-                'bg-amber-500',
-                'bg-slate-400',
-                'bg-lime-500',
-              ].map((color) => (
-                <button
-                  key={color}
-                  className={`h-5 w-5 rounded-full border border-slate-200 ${color}`}
-                />
-              ))}
-            </div>
-          </div>
-        </aside>
+        <FilterSidebar />
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            {
-              name: '나이키 아스트로그래버 레더',
-              subtitle: '여성 신발',
-              price: '149,000 원',
-              tag: '신제품',
-            },
-            {
-              name: '나이키 아스트로그래버 텍스타일',
-              subtitle: '여성 신발',
-              price: '139,000 원',
-              tag: '신제품',
-            },
-            {
-              name: '나이키 아스트로그래버 레더',
-              subtitle: '여성 신발',
-              price: '149,000 원',
-              tag: '리미티드',
-            },
-            {
-              name: '나이키 아스트로그래버',
-              subtitle: '남성 신발',
-              price: '149,000 원',
-              tag: '신제품',
-            },
-            {
-              name: '나이키 아스트로그래버 에센셜',
-              subtitle: '여성 신발',
-              price: '129,000 원',
-              tag: '베스트',
-            },
-            {
-              name: '나이키 아스트로그래버 프리미엄',
-              subtitle: '남녀공용 신발',
-              price: '159,000 원',
-              tag: '신제품',
-            },
-          ].map((item, index) => (
-            <article
-              key={item.name}
-              className={`fade-up delay-${(index + 1) * 120} space-y-3`}
-            >
-              <div className="aspect-[4/3] w-full bg-slate-100" />
-              <div className="space-y-1">
-                <p className="text-xs uppercase tracking-[0.2em] text-rose-500">
-                  {item.tag}
-                </p>
-                <h3 className="text-sm font-semibold text-slate-900">
-                  {item.name}
-                </h3>
-                <p className="text-xs text-slate-500">{item.subtitle}</p>
-                <p className="text-sm font-semibold text-slate-900">
-                  {item.price}
-                </p>
-              </div>
-            </article>
-          ))}
+          {isLoading && (
+            <p className="text-sm text-slate-500 sm:col-span-2 lg:col-span-3">
+              상품을 불러오는 중입니다...
+            </p>
+          )}
+          {isError && (
+            <p className="text-sm text-rose-500 sm:col-span-2 lg:col-span-3">
+              상품을 불러오지 못했습니다.
+            </p>
+          )}
+          {!isLoading &&
+            !isError &&
+            products.map((item, index) => (
+              <article
+                key={item.sku}
+                className={`fade-up delay-${(index + 1) * 120} space-y-3`}
+              >
+                {item.image ? (
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="aspect-[4/3] w-full bg-slate-100 object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="aspect-[4/3] w-full bg-slate-100" />
+                )}
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-[0.2em] text-rose-500">
+                    {item.status}
+                  </p>
+                  <h3 className="text-sm font-semibold text-slate-900">
+                    {item.name}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {item.category?.[0] ?? item.description}
+                  </p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {formatPrice(item.price)}
+                  </p>
+                </div>
+              </article>
+            ))}
 
           <article className="sm:col-span-2 lg:col-span-3">
             <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
