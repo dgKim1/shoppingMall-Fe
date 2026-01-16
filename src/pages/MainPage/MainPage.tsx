@@ -9,7 +9,7 @@ export default function MainPage() {
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-10">
-      <div className="fade-in">
+      <div className="title-section fade-in sticky top-0 z-20 -mx-6 bg-white/95 px-6 py-6 backdrop-blur">
         <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
           Shop the look
         </p>
@@ -42,7 +42,7 @@ export default function MainPage() {
       <div className="mt-8 grid gap-10 lg:grid-cols-[220px_1fr]">
         <FilterSidebar />
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="products-section grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading && (
             <p className="text-sm text-slate-500 sm:col-span-2 lg:col-span-3">
               상품을 불러오는 중입니다...
