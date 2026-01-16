@@ -1,4 +1,4 @@
-import type { ProductInput } from '../type/product'
+import type { ProductInput } from '../../../type/product'
 
 type ProductCardProps = {
   product: ProductInput
