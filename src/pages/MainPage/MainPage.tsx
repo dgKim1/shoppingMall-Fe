@@ -1,16 +1,61 @@
+import { useEffect, useRef } from 'react'
 import { Button, Dropdown, FilterSidebar } from '../../common'
 import useGetAllProducts from '../../hooks/product/useGetAllProducts'
 import ProductCard from './component/ProductCard'
 
 export default function MainPage() {
-  const { data: productsResponse, isLoading, isError } = useGetAllProducts()
-  const products = productsResponse?.data ?? []
+  const {
+    data: productsResponse,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetAllProducts({ limit: 9 })
+  const products = productsResponse?.pages.flatMap((page) => page.data) ?? []
+  const totalCount = productsResponse?.pages[0]?.total ?? products.length
   const formatPrice = (price: number) =>
     `${new Intl.NumberFormat('ko-KR').format(price)} 원`
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const titleRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) {
+      return undefined
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage()
+        }
+      },
+      { rootMargin: '200px' },
+    )
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
+  useEffect(() => {
+    const updateTitleOffset = () => {
+      const height = titleRef.current?.offsetHeight ?? 0
+      document.documentElement.style.setProperty(
+        '--title-section-offset',
+        `${height}px`,
+      )
+    }
+
+    updateTitleOffset()
+    window.addEventListener('resize', updateTitleOffset)
+    return () => window.removeEventListener('resize', updateTitleOffset)
+  }, [])
 
   return (
     <section className="px-8 py-10">
       <div
+        ref={titleRef}
         className="title-section fade-in sticky z-20 -mx-6 bg-white/95 px-6 py-6 backdrop-blur"
         style={{ top: 'var(--navbar-offset, 0px)' }}
       >
@@ -20,7 +65,7 @@ export default function MainPage() {
         <div className="mt-4 flex flex-wrap items-center justify-between gap-6">
           <div>
             <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-              아스트로그래버 ({products.length})
+              아스트로그래버 ({totalCount})
             </h1>
             <p className="mt-2 text-sm text-slate-500">
               레트로 감성으로 완성한 데일리 스니커즈 컬렉션
@@ -44,7 +89,12 @@ export default function MainPage() {
       </div>
 
       <div className="mt-8 flex gap-10">
-        <aside className="w-[220px] shrink-0">
+        <aside
+          className="w-[220px] shrink-0 self-start sticky"
+          style={{
+            top: 'calc(var(--navbar-offset, 0px) + var(--title-section-offset, 0px))',
+          }}
+        >
           <FilterSidebar />
         </aside>
         <div className="products-section grid flex-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -68,6 +118,17 @@ export default function MainPage() {
                 priceLabel={formatPrice(item.price)}
               />
             ))}
+          {!isLoading && !isError && hasNextPage && (
+            <div
+              ref={sentinelRef}
+              className="h-10 sm:col-span-2 lg:col-span-3"
+            />
+          )}
+          {isFetchingNextPage && (
+            <p className="text-sm text-slate-500 sm:col-span-2 lg:col-span-3">
+              상품을 더 불러오는 중입니다...
+            </p>
+          )}
 
           <article className="sm:col-span-2 lg:col-span-3">
             <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
