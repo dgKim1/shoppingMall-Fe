@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import type { ProductInput } from "../../product/type/product";
+import type { ProductInput } from "../../pages/MainPage/type/product";
 import api from "../../utils/api";
 
 export interface StatusResponse {

@@ -1,5 +1,6 @@
 import { Button, Dropdown, FilterSidebar } from '../../common'
 import useGetAllProducts from '../../hooks/product/useGetAllProducts'
+import ProductCard from './component/ProductCard'
 
 export default function MainPage() {
   const { data: productsResponse, isLoading, isError } = useGetAllProducts()
@@ -8,7 +9,7 @@ export default function MainPage() {
     `${new Intl.NumberFormat('ko-KR').format(price)} 원`
 
   return (
-    <section className="mx-auto max-w-6xl px-6 py-10">
+    <section className="px-8 py-10">
       <div
         className="title-section fade-in sticky z-20 -mx-6 bg-white/95 px-6 py-6 backdrop-blur"
         style={{ top: 'var(--navbar-offset, 0px)' }}
@@ -42,10 +43,11 @@ export default function MainPage() {
         </div>
       </div>
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-[220px_1fr]">
-        <FilterSidebar />
-
-        <div className="products-section grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-8 flex gap-10">
+        <aside className="w-[220px] shrink-0">
+          <FilterSidebar />
+        </aside>
+        <div className="products-section grid flex-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading && (
             <p className="text-sm text-slate-500 sm:col-span-2 lg:col-span-3">
               상품을 불러오는 중입니다...
@@ -59,35 +61,12 @@ export default function MainPage() {
           {!isLoading &&
             !isError &&
             products.map((item, index) => (
-              <article
+              <ProductCard
                 key={item.sku}
-                className={`fade-up delay-${(index + 1) * 120} space-y-3`}
-              >
-                {item.image ? (
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="aspect-[4/3] w-full bg-slate-100 object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="aspect-[4/3] w-full bg-slate-100" />
-                )}
-                <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.2em] text-rose-500">
-                    {item.status}
-                  </p>
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    {item.name}
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    {item.category?.[0] ?? item.description}
-                  </p>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {formatPrice(item.price)}
-                  </p>
-                </div>
-              </article>
+                product={item}
+                index={index}
+                priceLabel={formatPrice(item.price)}
+              />
             ))}
 
           <article className="sm:col-span-2 lg:col-span-3">
