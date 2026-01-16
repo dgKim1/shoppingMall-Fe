@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { Button, Dropdown } from '../common'
 
@@ -5,8 +6,59 @@ const linkBase =
   'px-3 py-2 text-sm uppercase tracking-wide transition-colors'
 
 export default function Navbar() {
+  const headerRef = useRef<HTMLElement>(null)
+  const lastScrollY = useRef(0)
+  const [isVisible, setIsVisible] = useState(true)
+  const [offset, setOffset] = useState(0)
+
+  useEffect(() => {
+    const updateOffset = () => {
+      const height = headerRef.current?.offsetHeight ?? 0
+      setOffset(height)
+    }
+
+    updateOffset()
+    window.addEventListener('resize', updateOffset)
+
+    return () => window.removeEventListener('resize', updateOffset)
+  }, [])
+
+  useEffect(() => {
+    const root = document.documentElement
+    root.style.setProperty('--navbar-offset', isVisible ? `${offset}px` : '0px')
+  }, [isVisible, offset])
+
+  useEffect(() => {
+    let ticking = false
+
+    const handleScroll = () => {
+      const currentY = window.scrollY
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const delta = currentY - lastScrollY.current
+          if (currentY <= 10) {
+            setIsVisible(true)
+          } else if (Math.abs(delta) > 6) {
+            setIsVisible(delta < 0)
+          }
+          lastScrollY.current = currentY
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   return (
-    <header className="border-b border-slate-200 bg-white">
+    <header
+      ref={headerRef}
+      className={`fixed left-0 right-0 top-0 z-40 border-b border-slate-200 bg-white transition-transform duration-300 ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+    >
       <nav className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
         <NavLink to="/" className="text-lg font-semibold">
           nodeShop

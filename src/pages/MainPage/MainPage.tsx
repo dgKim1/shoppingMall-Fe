@@ -9,7 +9,10 @@ export default function MainPage() {
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-10">
-      <div className="title-section fade-in sticky top-0 z-20 -mx-6 bg-white/95 px-6 py-6 backdrop-blur">
+      <div
+        className="title-section fade-in sticky z-20 -mx-6 bg-white/95 px-6 py-6 backdrop-blur"
+        style={{ top: 'var(--navbar-offset, 0px)' }}
+      >
         <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
           Shop the look
         </p>
