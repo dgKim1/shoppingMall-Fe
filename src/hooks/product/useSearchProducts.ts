@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import api from "../../utils/api";
-import type { ProductInput } from "./useCreateProduct";
+import type { ProductInput } from "../../type/product";
 
 export interface SearchProductsResponse {
   status: string;
@@ -12,20 +12,32 @@ export interface SearchProductsResponse {
 
 export interface SearchProductsParams {
   name?: string;
-  page?: number;
+  limit?: number;
 }
 
-const getProductsBySearch = async ({ name, page }: SearchProductsParams) => {
+const getProductsBySearch = async (
+  page: number,
+  { name, limit }: SearchProductsParams,
+) => {
   const { data } = await api.get("/product/getProductsBySearch", {
-    params: { name, page },
+    params: { name, page, limit },
   });
   return data as SearchProductsResponse;
 };
 
 const useSearchProducts = (params: SearchProductsParams, options = {}) =>
-  useQuery({
+  useInfiniteQuery<
+    SearchProductsResponse,
+    Error,
+    InfiniteData<SearchProductsResponse>,
+    (string | SearchProductsParams)[],
+    number
+  >({
     queryKey: ["products", "search", params],
-    queryFn: () => getProductsBySearch(params),
+    queryFn: ({ pageParam }) => getProductsBySearch(pageParam, params),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     ...options,
   });
 

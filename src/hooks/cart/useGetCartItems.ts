@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import api from "../../utils/api";
 import type { CartItemResponse } from "./useAddToCart";
+import api from "../../utils/api";
 
 export interface GetCartItemsResponse {
   status: string;

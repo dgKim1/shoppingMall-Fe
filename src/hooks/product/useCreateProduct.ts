@@ -1,17 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
+import type { ProductInput } from "../../type/product";
 import api from "../../utils/api";
-
-export interface ProductInput {
-  sku: string;
-  name: string;
-  image: string;
-  price: number;
-  description: string;
-  category: string[];
-  status: string;
-  isDeleted?: boolean;
-  stock?: Record<string, number>;
-}
 
 export interface StatusResponse {
   status: string;

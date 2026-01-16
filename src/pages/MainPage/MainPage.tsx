@@ -1,148 +1,134 @@
+import { useEffect, useRef } from 'react'
+import { Button, Dropdown, FilterSidebar } from '../../common'
+import useGetAllProducts from '../../hooks/product/useGetAllProducts'
+import ProductCard from './component/ProductCard'
+
 export default function MainPage() {
+  const {
+    data: productsResponse,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetAllProducts({ limit: 9 })
+  const products = productsResponse?.pages.flatMap((page) => page.data) ?? []
+  const totalCount = productsResponse?.pages[0]?.total ?? products.length
+  const formatPrice = (price: number) =>
+    `${new Intl.NumberFormat('ko-KR').format(price)} 원`
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const titleRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) {
+      return undefined
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage()
+        }
+      },
+      { rootMargin: '200px' },
+    )
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
+  useEffect(() => {
+    const updateTitleOffset = () => {
+      const height = titleRef.current?.offsetHeight ?? 0
+      document.documentElement.style.setProperty(
+        '--title-section-offset',
+        `${height}px`,
+      )
+    }
+
+    updateTitleOffset()
+    window.addEventListener('resize', updateTitleOffset)
+    return () => window.removeEventListener('resize', updateTitleOffset)
+  }, [])
+
   return (
-    <section className="mx-auto max-w-6xl px-6 py-10">
-      <div className="fade-in">
+    <section className="px-8 py-10">
+      <div
+        ref={titleRef}
+        className="title-section fade-in sticky z-20 -mx-6 bg-white/95 px-6 py-6 backdrop-blur"
+        style={{ top: 'var(--navbar-offset, 0px)' }}
+      >
         <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
           Shop the look
         </p>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-6">
           <div>
             <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-              아스트로그래버 (11)
+              아스트로그래버 ({totalCount})
             </h1>
             <p className="mt-2 text-sm text-slate-500">
               레트로 감성으로 완성한 데일리 스니커즈 컬렉션
             </p>
           </div>
           <div className="flex items-center gap-3 text-xs text-slate-500">
-            <button className="rounded-full border border-slate-200 bg-white px-3 py-2">
+            <Button variant="outline" size="sm">
               필터 숨기기
-            </button>
-            <button className="rounded-full border border-slate-200 bg-white px-3 py-2">
-              정렬 기준: 추천순
-            </button>
+            </Button>
+            <Dropdown
+              label="정렬 기준: 추천순"
+              items={[
+                { label: '추천순' },
+                { label: '신상품' },
+                { label: '가격 낮은순' },
+                { label: '가격 높은순' },
+              ]}
+            />
           </div>
         </div>
       </div>
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-[220px_1fr]">
-        <aside className="fade-up space-y-6 text-sm text-slate-600">
-          {[
-            { title: '성별', items: ['남성', '여성', '남녀공용'] },
-            { title: '스포츠', items: ['라이프스타일'] },
-            {
-              title: '가격대',
-              items: ['100,000 - 150,000 원', '150,000 - 200,000 원'],
-            },
-            {
-              title: '브랜드',
-              items: ['나이키 스포츠웨어', 'NikeLab'],
-            },
-          ].map((group) => (
-            <div key={group.title} className="border-b border-slate-200 pb-4">
-              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
-                <span>{group.title}</span>
-                <span className="text-slate-400">˅</span>
-              </div>
-              <div className="mt-3 space-y-2">
-                {group.items.map((item) => (
-                  <label
-                    key={item}
-                    className="flex items-center gap-2 text-sm text-slate-600"
-                  >
-                    <input
-                      type="checkbox"
-                      className="h-3.5 w-3.5 rounded border-slate-300"
-                    />
-                    {item}
-                  </label>
-                ))}
-              </div>
-            </div>
-          ))}
-          <div className="border-b border-slate-200 pb-4">
-            <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
-              <span>색상</span>
-              <span className="text-slate-400">˅</span>
-            </div>
-            <div className="mt-3 grid grid-cols-4 gap-2">
-              {[
-                'bg-black',
-                'bg-white',
-                'bg-red-500',
-                'bg-emerald-500',
-                'bg-sky-500',
-                'bg-amber-500',
-                'bg-slate-400',
-                'bg-lime-500',
-              ].map((color) => (
-                <button
-                  key={color}
-                  className={`h-5 w-5 rounded-full border border-slate-200 ${color}`}
-                />
-              ))}
-            </div>
-          </div>
+      <div className="mt-8 flex gap-10">
+        <aside
+          className="w-[220px] shrink-0 self-start sticky"
+          style={{
+            top: 'calc(var(--navbar-offset, 0px) + var(--title-section-offset, 0px))',
+          }}
+        >
+          <FilterSidebar />
         </aside>
-
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            {
-              name: '나이키 아스트로그래버 레더',
-              subtitle: '여성 신발',
-              price: '149,000 원',
-              tag: '신제품',
-            },
-            {
-              name: '나이키 아스트로그래버 텍스타일',
-              subtitle: '여성 신발',
-              price: '139,000 원',
-              tag: '신제품',
-            },
-            {
-              name: '나이키 아스트로그래버 레더',
-              subtitle: '여성 신발',
-              price: '149,000 원',
-              tag: '리미티드',
-            },
-            {
-              name: '나이키 아스트로그래버',
-              subtitle: '남성 신발',
-              price: '149,000 원',
-              tag: '신제품',
-            },
-            {
-              name: '나이키 아스트로그래버 에센셜',
-              subtitle: '여성 신발',
-              price: '129,000 원',
-              tag: '베스트',
-            },
-            {
-              name: '나이키 아스트로그래버 프리미엄',
-              subtitle: '남녀공용 신발',
-              price: '159,000 원',
-              tag: '신제품',
-            },
-          ].map((item, index) => (
-            <article
-              key={item.name}
-              className={`fade-up delay-${(index + 1) * 120} space-y-3`}
-            >
-              <div className="aspect-[4/3] w-full bg-slate-100" />
-              <div className="space-y-1">
-                <p className="text-xs uppercase tracking-[0.2em] text-rose-500">
-                  {item.tag}
-                </p>
-                <h3 className="text-sm font-semibold text-slate-900">
-                  {item.name}
-                </h3>
-                <p className="text-xs text-slate-500">{item.subtitle}</p>
-                <p className="text-sm font-semibold text-slate-900">
-                  {item.price}
-                </p>
-              </div>
-            </article>
-          ))}
+        <div className="products-section grid flex-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {isLoading && (
+            <p className="text-sm text-slate-500 sm:col-span-2 lg:col-span-3">
+              상품을 불러오는 중입니다...
+            </p>
+          )}
+          {isError && (
+            <p className="text-sm text-rose-500 sm:col-span-2 lg:col-span-3">
+              상품을 불러오지 못했습니다.
+            </p>
+          )}
+          {!isLoading &&
+            !isError &&
+            products.map((item, index) => (
+              <ProductCard
+                key={`${item.sku}-${index}`}
+                product={item}
+                index={index}
+                priceLabel={formatPrice(item.price)}
+              />
+            ))}
+          {!isLoading && !isError && hasNextPage && (
+            <div
+              ref={sentinelRef}
+              className="h-10 sm:col-span-2 lg:col-span-3"
+            />
+          )}
+          {isFetchingNextPage && (
+            <p className="text-sm text-slate-500 sm:col-span-2 lg:col-span-3">
+              상품을 더 불러오는 중입니다...
+            </p>
+          )}
 
           <article className="sm:col-span-2 lg:col-span-3">
             <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
@@ -157,9 +143,9 @@ export default function MainPage() {
                 <p className="text-sm text-white/70">
                   레트로 그린 컬러로 완성한 시즌 무드.
                 </p>
-                <button className="w-fit rounded-full border border-white/40 px-4 py-2 text-xs uppercase tracking-wide">
+                <Button variant="outline" size="sm" className="border-white/40 text-white hover:bg-white/10">
                   스토리 보기
-                </button>
+                </Button>
               </div>
             </div>
           </article>
