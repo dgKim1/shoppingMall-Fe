@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { Button, Dropdown } from '../common'
-
-const linkBase =
-  'px-3 py-2 text-sm uppercase tracking-wide transition-colors'
-
+import { linkBase, MEGA_MENU } from '../const/NavBar/const'
+export type MegaMenuKey = keyof typeof MEGA_MENU
 export default function Navbar() {
   const headerRef = useRef<HTMLElement>(null)
   const lastScrollY = useRef(0)
@@ -72,30 +70,43 @@ export default function Navbar() {
           >
             New
           </NavLink>
-          <NavLink
-            to="/Men"
-            className={({ isActive }) =>
-              `${linkBase} ${isActive ? 'text-slate-900' : 'text-slate-500'}`
-            }
-          >
-            Men
-          </NavLink>
-          <NavLink
-            to="/Women"
-            className={({ isActive }) =>
-              `${linkBase} ${isActive ? 'text-slate-900' : 'text-slate-500'}`
-            }
-          >
-            Women
-          </NavLink>
-          <NavLink
-            to="/Kids"
-            className={({ isActive }) =>
-              `${linkBase} ${isActive ? 'text-slate-900' : 'text-slate-500'}`
-            }
-          >
-            Kids
-          </NavLink>
+          {(['Men', 'Women', 'Kids'] as MegaMenuKey[]).map((menuKey) => (
+            <div key={menuKey} className="relative group">
+              <NavLink
+                to={`/${menuKey}`}
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? 'text-slate-900' : 'text-slate-500'}`
+                }
+              >
+                {menuKey}
+              </NavLink>
+              <div
+                className="pointer-events-none fixed left-0 right-0 z-30 border-t border-slate-200 bg-white px-12 py-8 opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100"
+                style={{ top: 'var(--navbar-offset, 0px)' }}
+              >
+                <div className="grid grid-cols-3 gap-10 text-sm text-slate-600">
+                  {MEGA_MENU[menuKey].map((section) => (
+                    <div key={section.title} className="space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                        {section.title}
+                      </p>
+                      <div className="grid gap-2">
+                        {section.items.map((item) => (
+                          <button
+                            key={item}
+                            type="button"
+                            className="text-left text-sm text-slate-700 transition hover:text-slate-900"
+                          >
+                            {item}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
           <NavLink
             to="/Jordan"
             className={({ isActive }) =>
