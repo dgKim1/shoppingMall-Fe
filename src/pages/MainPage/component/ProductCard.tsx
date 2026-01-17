@@ -15,14 +15,14 @@ export default function ProductCard({
   return (
     <Link to={`/product/${product.sku}`} className="block">
       <article className={`fade-up delay-${(index + 1) * 120} space-y-3`}>
-        {product.image ? (
-          <img
-            src={product.image}
-            alt={product.name}
-            className="h-[508px] w-[508px] bg-slate-100 object-cover"
-            loading="lazy"
-          />
-        ) : (
+      {product.image?.[0] ? (
+        <img
+          src={product.image[0]}
+          alt={product.name}
+          className="h-[508px] w-[508px] bg-slate-100 object-cover"
+          loading="lazy"
+        />
+      ) : (
           <div className="h-[508px] w-[508px] bg-slate-100" />
         )}
         <div className="space-y-1">
