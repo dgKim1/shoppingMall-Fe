@@ -12,11 +12,12 @@ export interface ProductsResponse {
 
 export interface GetAllProductsParams {
   limit?: number;
+  sort?: string;
 }
 
-const getAllProducts = async (page: number, limit?: number) => {
+const getAllProducts = async (page: number, params: GetAllProductsParams) => {
   const { data } = await api.get("/product/getAllProducts", {
-    params: { page, limit },
+    params: { page, limit: params.limit, sort: params.sort },
   });
   return data as ProductsResponse;
 };
@@ -30,7 +31,7 @@ const useGetAllProducts = (params: GetAllProductsParams = {}, options = {}) =>
     number
   >({
     queryKey: ["products", "all", params],
-    queryFn: ({ pageParam }) => getAllProducts(pageParam, params.limit),
+    queryFn: ({ pageParam }) => getAllProducts(pageParam, params),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
