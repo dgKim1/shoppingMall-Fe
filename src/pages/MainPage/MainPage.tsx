@@ -1,9 +1,12 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Button, Dropdown, FilterSidebar } from '../../common'
+import type { FilterState } from '../../common/FilterSidebar'
 import useGetAllProducts from '../../hooks/product/useGetAllProducts'
 import ProductCard from './component/ProductCard'
 
 export default function MainPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const {
     data: productsResponse,
     isLoading,
@@ -17,6 +20,115 @@ export default function MainPage() {
   const formatPrice = (price: number) =>
     `${new Intl.NumberFormat('ko-KR').format(price)} 원`
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const [filters, setFilters] = useState<FilterState>({
+    성별: [],
+    스포츠: [],
+    가격대: [],
+    브랜드: [],
+    색상: [],
+  })
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true)
+  const initializedRef = useRef(false)
+
+  const toggleFilter = (group: keyof FilterState, value: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      [group]: prev[group].includes(value)
+        ? prev[group].filter((item) => item !== value)
+        : [...prev[group], value],
+    }))
+  }
+
+  useEffect(() => {
+    if (initializedRef.current) {
+      return
+    }
+
+    const readValues = (key: keyof FilterState) =>
+      searchParams.get(key)?.split(',').filter(Boolean) ?? []
+
+    setFilters({
+      성별: readValues('성별'),
+      스포츠: readValues('스포츠'),
+      가격대: readValues('가격대'),
+      브랜드: readValues('브랜드'),
+      색상: readValues('색상'),
+    })
+    initializedRef.current = true
+  }, [searchParams])
+
+  useEffect(() => {
+    if (!initializedRef.current) {
+      return
+    }
+
+    const nextParams = new URLSearchParams()
+    ;(Object.keys(filters) as (keyof FilterState)[]).forEach((key) => {
+      if (filters[key].length > 0) {
+        nextParams.set(key, filters[key].join(','))
+      }
+    })
+
+    setSearchParams(nextParams, { replace: true })
+  }, [filters, setSearchParams])
+
+  const parsePriceRange = (label: string) => {
+    const numbers = label
+      .replace(/[^0-9-]/g, '')
+      .split('-')
+      .map((item) => Number(item))
+      .filter((item) => !Number.isNaN(item))
+    if (numbers.length >= 2) {
+      return { min: numbers[0], max: numbers[1] }
+    }
+    return null
+  }
+
+  const hasActiveFilters = Object.values(filters).some(
+    (values) => values.length > 0,
+  )
+  const filteredProducts = useMemo(() => {
+    if (!hasActiveFilters) {
+      return products
+    }
+
+    return products.filter((product) => {
+      const matchesGender =
+        filters.성별.length === 0 ||
+        (product.gender && filters.성별.includes(product.gender))
+      const matchesBrand =
+        filters.브랜드.length === 0 ||
+        (product.brand && filters.브랜드.includes(product.brand))
+      const matchesSport =
+        filters.스포츠.length === 0 ||
+        (product.category &&
+          product.category.some((item) => filters.스포츠.includes(item)))
+      const matchesColor =
+        filters.색상.length === 0 ||
+        (product.color &&
+          product.color.some((color) => filters.색상.includes(color)))
+      const matchesPrice =
+        filters.가격대.length === 0 ||
+        filters.가격대.some((range) => {
+          const parsed = parsePriceRange(range)
+          if (!parsed) {
+            return false
+          }
+          return product.price >= parsed.min && product.price <= parsed.max
+        })
+
+      return (
+        matchesGender &&
+        matchesBrand &&
+        matchesSport &&
+        matchesColor &&
+        matchesPrice
+      )
+    })
+  }, [filters, hasActiveFilters, products])
+  const displayCount = hasActiveFilters
+    ? filteredProducts.length
+    : totalCount
   const titleRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -65,15 +177,35 @@ export default function MainPage() {
         <div className="mt-4 flex flex-wrap items-center justify-between gap-6">
           <div>
             <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-              아스트로그래버 ({totalCount})
+              아스트로그래버 ({displayCount})
             </h1>
             <p className="mt-2 text-sm text-slate-500">
               레트로 감성으로 완성한 데일리 스니커즈 컬렉션
             </p>
           </div>
           <div className="flex items-center gap-3 text-xs text-slate-500">
-            <Button variant="outline" size="sm">
-              필터 숨기기
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsSidebarVisible((prev) => !prev)}
+            >
+              <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
+                <svg
+                  aria-hidden="true"
+                  className="h-4 w-4"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                  role="img"
+                  fill="none"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    d="M21 8.25H10m-5.25 0H3m0 7.5h10.75m5 0H21m-2.25 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zM7.5 6a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z"
+                  />
+                </svg>
+              </span>
+              {isSidebarVisible ? '필터 숨기기' : '필터 표시'}
             </Button>
             <Dropdown
               label="정렬 기준: 추천순"
@@ -88,14 +220,26 @@ export default function MainPage() {
         </div>
       </div>
 
-      <div className="mt-8 flex gap-10">
+      <div
+        className={`mt-8 flex transition-all duration-300 ${
+          isSidebarVisible ? 'gap-10' : 'gap-0'
+        }`}
+      >
         <aside
-          className="w-[220px] shrink-0 self-start sticky"
+          className={`self-start sticky overflow-hidden transition-all duration-300 ${
+            isSidebarVisible
+              ? 'w-[220px] flex-[0_0_220px] opacity-100'
+              : 'w-0 flex-[0_0_0] opacity-0 pointer-events-none'
+          } min-w-0`}
           style={{
             top: 'calc(var(--navbar-offset, 0px) + var(--title-section-offset, 0px))',
           }}
+          aria-hidden={!isSidebarVisible}
         >
-          <FilterSidebar />
+          <FilterSidebar
+            selectedFilters={filters}
+            onToggleFilter={toggleFilter}
+          />
         </aside>
         <div className="products-section grid flex-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading && (
@@ -110,7 +254,7 @@ export default function MainPage() {
           )}
           {!isLoading &&
             !isError &&
-            products.map((item, index) => (
+            filteredProducts.map((item, index) => (
               <ProductCard
                 key={`${item.sku}-${index}`}
                 product={item}

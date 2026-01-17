@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import useGetProductBySku from '../../hooks/product/useGetProductBySku'
 
@@ -5,10 +6,21 @@ export default function ProductDetailPage() {
   const { sku } = useParams()
   const { data: productResponse, isLoading, isError } = useGetProductBySku(sku)
   const product = productResponse?.data
+  const images = useMemo(() => product?.image ?? [], [product?.image])
+  const thumbnails = useMemo(
+    () => (images.length > 0 ? images : Array.from({ length: 6 }, () => null)),
+    [images],
+  )
+  const [activeIndex, setActiveIndex] = useState(0)
   const formatPrice = (price?: number) =>
     typeof price === 'number'
       ? `${new Intl.NumberFormat('ko-KR').format(price)} 원`
       : '-'
+  const hasMultipleImages = images.length > 1
+
+  useEffect(() => {
+    setActiveIndex(0)
+  }, [images.length])
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-16">
@@ -22,17 +34,27 @@ export default function ProductDetailPage() {
         <>
           <div className="grid gap-12 lg:grid-cols-[72px_1fr_360px]">
             <div className="hidden flex-col gap-3 lg:flex">
-              {Array.from({ length: 6 }).map((_, index) => (
+              {thumbnails.map((thumbnail, index) => (
                 <button
                   key={index}
                   type="button"
-                  className="h-16 w-16 overflow-hidden rounded-lg border border-slate-200 bg-slate-100"
+                  className={`h-16 w-16 overflow-hidden rounded-lg border bg-slate-100 ${
+                    images[index] && activeIndex === index
+                      ? 'border-slate-900'
+                      : 'border-slate-200'
+                  }`}
                   aria-label={`thumbnail ${index + 1}`}
+                  onClick={() => {
+                    if (images[index]) {
+                      setActiveIndex(index)
+                    }
+                  }}
+                  disabled={!images[index]}
                 >
-                  {product?.image ? (
+                  {thumbnail ? (
                     <img
-                      src={product.image}
-                      alt={product.name}
+                      src={thumbnail}
+                      alt={product?.name ?? 'product image'}
                       className="h-full w-full object-cover"
                       loading="lazy"
                     />
@@ -44,10 +66,10 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="relative overflow-hidden rounded-3xl bg-slate-100">
-              {product?.image ? (
+              {images.length > 0 ? (
                 <img
-                  src={product.image}
-                  alt={product.name}
+                  src={images[activeIndex]}
+                  alt={product?.name ?? 'product image'}
                   className="aspect-[4/5] w-full object-cover"
                 />
               ) : (
@@ -56,15 +78,29 @@ export default function ProductDetailPage() {
               <div className="absolute bottom-4 right-4 flex gap-2">
                 <button
                   type="button"
-                  className="h-9 w-9 rounded-full border border-white bg-white/90 text-sm shadow"
+                  className="h-9 w-9 rounded-full border border-white bg-white/90 text-sm shadow disabled:cursor-not-allowed disabled:opacity-50"
                   aria-label="previous image"
+                  onClick={() => {
+                    if (images.length > 0) {
+                      setActiveIndex(
+                        (prev) => (prev - 1 + images.length) % images.length,
+                      )
+                    }
+                  }}
+                  disabled={!hasMultipleImages}
                 >
                   ◀
                 </button>
                 <button
                   type="button"
-                  className="h-9 w-9 rounded-full border border-white bg-white/90 text-sm shadow"
+                  className="h-9 w-9 rounded-full border border-white bg-white/90 text-sm shadow disabled:cursor-not-allowed disabled:opacity-50"
                   aria-label="next image"
+                  onClick={() => {
+                    if (images.length > 0) {
+                      setActiveIndex((prev) => (prev + 1) % images.length)
+                    }
+                  }}
+                  disabled={!hasMultipleImages}
                 >
                   ▶
                 </button>
@@ -92,7 +128,7 @@ export default function ProductDetailPage() {
                   <button
                     type="button"
                     className={`h-14 w-14 rounded-xl border border-slate-200 ${
-                      product?.color ?? 'bg-slate-200'
+                      product?.color?.[0] ?? 'bg-slate-200'
                     }`}
                     aria-label="color option 1"
                   />
