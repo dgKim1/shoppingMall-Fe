@@ -27,6 +27,7 @@ export default function MainPage() {
     브랜드: [],
     색상: [],
   })
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true)
   const initializedRef = useRef(false)
 
   const toggleFilter = (group: keyof FilterState, value: string) => {
@@ -183,8 +184,28 @@ export default function MainPage() {
             </p>
           </div>
           <div className="flex items-center gap-3 text-xs text-slate-500">
-            <Button variant="outline" size="sm">
-              필터 숨기기
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsSidebarVisible((prev) => !prev)}
+            >
+              <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
+                <svg
+                  aria-hidden="true"
+                  className="h-4 w-4"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                  role="img"
+                  fill="none"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    d="M21 8.25H10m-5.25 0H3m0 7.5h10.75m5 0H21m-2.25 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zM7.5 6a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z"
+                  />
+                </svg>
+              </span>
+              {isSidebarVisible ? '필터 숨기기' : '필터 표시'}
             </Button>
             <Dropdown
               label="정렬 기준: 추천순"
@@ -199,14 +220,26 @@ export default function MainPage() {
         </div>
       </div>
 
-      <div className="mt-8 flex gap-10">
+      <div
+        className={`mt-8 flex transition-all duration-300 ${
+          isSidebarVisible ? 'gap-10' : 'gap-0'
+        }`}
+      >
         <aside
-          className="w-[220px] shrink-0 self-start sticky"
+          className={`self-start sticky overflow-hidden transition-all duration-300 ${
+            isSidebarVisible
+              ? 'w-[220px] flex-[0_0_220px] opacity-100'
+              : 'w-0 flex-[0_0_0] opacity-0 pointer-events-none'
+          } min-w-0`}
           style={{
             top: 'calc(var(--navbar-offset, 0px) + var(--title-section-offset, 0px))',
           }}
+          aria-hidden={!isSidebarVisible}
         >
-          <FilterSidebar selectedFilters={filters} onToggleFilter={toggleFilter} />
+          <FilterSidebar
+            selectedFilters={filters}
+            onToggleFilter={toggleFilter}
+          />
         </aside>
         <div className="products-section grid flex-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading && (
