@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { Button, Dropdown } from '../common'
 import { linkBase, MEGA_MENU } from '../const/NavBar/const'
+import { buildCategoryQuery } from '../utils/query'
 export type MegaMenuKey = keyof typeof MEGA_MENU
 export default function Navbar() {
   const headerRef = useRef<HTMLElement>(null)
@@ -9,6 +10,7 @@ export default function Navbar() {
   const [isVisible, setIsVisible] = useState(true)
   const [offset, setOffset] = useState(0)
   const [activeMenu, setActiveMenu] = useState<MegaMenuKey | null>(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const updateOffset = () => {
@@ -205,6 +207,14 @@ export default function Navbar() {
                       key={item}
                       type="button"
                       className="text-left text-sm text-slate-700 transition hover:text-slate-900 hover:font-bold"
+                      onClick={() => {
+                        const query = buildCategoryQuery({
+                          categoryMain: section.title,
+                          categorySub: item,
+                        })
+                        navigate(`/${activeMenu ?? ''}?${query}`)
+                        setActiveMenu(null)
+                      }}
                     >
                       {item}
                     </button>

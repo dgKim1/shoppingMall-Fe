@@ -31,8 +31,9 @@ export default function MainPage() {
     브랜드: [],
     색상: [],
   })
+  const [categoryMain, setCategoryMain] = useState<string | null>(null)
+  const [categorySub, setCategorySub] = useState<string | null>(null)
   const [isSidebarVisible, setIsSidebarVisible] = useState(true)
-  const initializedRef = useRef(false)
 
   const toggleFilter = (group: keyof FilterState, value: string) => {
     setFilters((prev) => ({
@@ -44,10 +45,6 @@ export default function MainPage() {
   }
 
   useEffect(() => {
-    if (initializedRef.current) {
-      return
-    }
-
     const readValues = (key: keyof FilterState) =>
       searchParams.get(key)?.split(',').filter(Boolean) ?? []
 
@@ -58,23 +55,28 @@ export default function MainPage() {
       브랜드: readValues('브랜드'),
       색상: readValues('색상'),
     })
-    initializedRef.current = true
+    setCategoryMain(searchParams.get('categoryMain'))
+    setCategorySub(searchParams.get('categorySub'))
   }, [searchParams])
 
   useEffect(() => {
-    if (!initializedRef.current) {
-      return
-    }
-
     const nextParams = new URLSearchParams()
     ;(Object.keys(filters) as (keyof FilterState)[]).forEach((key) => {
       if (filters[key].length > 0) {
         nextParams.set(key, filters[key].join(','))
       }
     })
+    if (categoryMain) {
+      nextParams.set('categoryMain', categoryMain)
+    }
+    if (categorySub) {
+      nextParams.set('categorySub', categorySub)
+    }
 
-    setSearchParams(nextParams, { replace: true })
-  }, [filters, setSearchParams])
+    if (nextParams.toString() !== searchParams.toString()) {
+      setSearchParams(nextParams, { replace: true })
+    }
+  }, [categoryMain, categorySub, filters, searchParams, setSearchParams])
 
   const parsePriceRange = (label: string) => {
     const numbers = label
@@ -105,8 +107,9 @@ export default function MainPage() {
         (product.brand && filters.브랜드.includes(product.brand))
       const matchesSport =
         filters.스포츠.length === 0 ||
-        (product.category &&
-          product.category.some((item) => filters.스포츠.includes(item)))
+        (product.categoryMain &&
+          filters.스포츠.includes(product.categoryMain)) ||
+        (product.categorySub && filters.스포츠.includes(product.categorySub))
       const matchesColor =
         filters.색상.length === 0 ||
         (product.color &&
@@ -120,21 +123,29 @@ export default function MainPage() {
           }
           return product.price >= parsed.min && product.price <= parsed.max
         })
+      const matchesCategoryMain =
+        !categoryMain || product.categoryMain === categoryMain
+      const matchesCategorySub =
+        !categorySub || product.categorySub === categorySub
 
       return (
         matchesGender &&
         matchesBrand &&
         matchesSport &&
         matchesColor &&
-        matchesPrice
+        matchesPrice &&
+        matchesCategoryMain &&
+        matchesCategorySub
       )
     })
-  }, [filters, hasActiveFilters, products])
+  }, [categoryMain, categorySub, filters, hasActiveFilters, products])
   const displayCount = hasActiveFilters
     ? filteredProducts.length
     : totalCount
   const titleRef = useRef<HTMLDivElement | null>(null)
 
+
+  // 무한 스크롤 기능을 위한 서버 상태 동기화
   useEffect(() => {
     const sentinel = sentinelRef.current
     if (!sentinel) {
@@ -154,6 +165,7 @@ export default function MainPage() {
     return () => observer.disconnect()
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
+  //스크롤시 NavBar 애니메이션
   useEffect(() => {
     const updateTitleOffset = () => {
       const height = titleRef.current?.offsetHeight ?? 0
