@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button, Dropdown, FilterSidebar } from '../../common'
-import type { FilterState } from '../../common/FilterSidebar'
+import type { FilterState } from '../../components/FilterSidebar'
 import useGetAllProducts from '../../hooks/product/useGetAllProducts'
 import ProductCard from './component/ProductCard'
 

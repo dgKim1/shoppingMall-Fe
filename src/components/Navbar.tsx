@@ -3,6 +3,8 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { Button, Dropdown } from '../common'
 import { linkBase, MEGA_MENU } from '../const/NavBar/const'
 import { buildCategoryQuery } from '../utils/query'
+import useLogout from '../hooks/auth/useLogout'
+import { clearAuth, isAuthenticated } from '../utils/auth'
 export type MegaMenuKey = keyof typeof MEGA_MENU
 export default function Navbar() {
   const headerRef = useRef<HTMLElement>(null)
@@ -10,7 +12,18 @@ export default function Navbar() {
   const [isVisible, setIsVisible] = useState(true)
   const [offset, setOffset] = useState(0)
   const [activeMenu, setActiveMenu] = useState<MegaMenuKey | null>(null)
+  const [loggedIn, setLoggedIn] = useState(isAuthenticated())
   const navigate = useNavigate()
+  const logoutMutation = useLogout({
+    onSuccess: () => {
+      clearAuth()
+      navigate('/login')
+    },
+    onError: () => {
+      clearAuth()
+      navigate('/login')
+    },
+  })
 
   useEffect(() => {
     const updateOffset = () => {
@@ -51,6 +64,16 @@ export default function Navbar() {
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const handleAuthChange = () => setLoggedIn(isAuthenticated())
+    window.addEventListener('auth:change', handleAuthChange)
+    window.addEventListener('storage', handleAuthChange)
+    return () => {
+      window.removeEventListener('auth:change', handleAuthChange)
+      window.removeEventListener('storage', handleAuthChange)
+    }
   }, [])
 
   return (
@@ -153,7 +176,25 @@ export default function Navbar() {
             </svg>
           </Button>
           <Dropdown
-            items={[{ label: '로그인' }]}
+            items={
+              loggedIn
+                ? [
+                    {
+                      label: '로그아웃',
+                      onSelect: () => {
+                        logoutMutation.mutate()
+                      },
+                    },
+                  ]
+                : [
+                    {
+                      label: '로그인',
+                      onSelect: () => {
+                        navigate('/login')
+                      },
+                    },
+                  ]
+            }
             trigger={({ buttonProps }) => (
               <Button
                 {...buttonProps}
