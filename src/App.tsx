@@ -6,6 +6,10 @@ import MainPage from './pages/MainPage/MainPage'
 import CartPage from './pages/CartPage/CartPage'
 import OrderPage from './pages/OrderPage/OrderPage'
 import ProductDetailPage from './pages/ProductDetailPage/ProductDetailPage'
+import NewProductPage from './pages/NewProductPage/NewProductPage'
+import MenProductPage from './pages/MenProductPage/MenProductPage'
+import WomenProductPage from './pages/WomenProductPage/WomenProductPage'
+import KidsProductPage from './pages/KidsProductPage/KidsProductPage'
 
 function Layout({ children }: { children: ReactNode }) {
   return (
@@ -34,6 +38,38 @@ function App() {
           element={
             <Layout>
               <ProductDetailPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/new"
+          element={
+            <Layout>
+              <NewProductPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/Men"
+          element={
+            <Layout>
+              <MenProductPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/Women"
+          element={
+            <Layout>
+              <WomenProductPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/Kids"
+          element={
+            <Layout>
+              <KidsProductPage />
             </Layout>
           }
         />

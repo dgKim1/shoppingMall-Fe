@@ -5,7 +5,8 @@ export interface ProductInput {
   image: string[];
   price: number;
   description: string;
-  category: string[];
+  categoryMain?: string;
+  categorySub?: string;
   gender?: string;
   brand?: string;
   color?: string[];

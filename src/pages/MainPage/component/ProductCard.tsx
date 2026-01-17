@@ -32,9 +32,9 @@ export default function ProductCard({
           <h3 className="text-sm font-semibold text-slate-900">
             {product.name}
           </h3>
-          <p className="text-xs text-slate-500">
-            {product.category?.[0] ?? product.description}
-          </p>
+        <p className="text-xs text-slate-500">
+          {product.categorySub ?? product.categoryMain ?? product.description}
+        </p>
           <p className="text-sm font-semibold text-slate-900">{priceLabel}</p>
         </div>
       </article>

@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { Button, Dropdown } from '../common'
-
-const linkBase =
-  'px-3 py-2 text-sm uppercase tracking-wide transition-colors'
-
+import { linkBase, MEGA_MENU } from '../const/NavBar/const'
+import { buildCategoryQuery } from '../utils/query'
+export type MegaMenuKey = keyof typeof MEGA_MENU
 export default function Navbar() {
   const headerRef = useRef<HTMLElement>(null)
   const lastScrollY = useRef(0)
   const [isVisible, setIsVisible] = useState(true)
   const [offset, setOffset] = useState(0)
+  const [activeMenu, setActiveMenu] = useState<MegaMenuKey | null>(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const updateOffset = () => {
@@ -58,12 +59,13 @@ export default function Navbar() {
       className={`fixed left-0 right-0 top-0 z-40 border-b border-slate-200 bg-white transition-transform duration-300 ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
+      onMouseLeave={() => setActiveMenu(null)}
     >
       <nav className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
         <NavLink to="/" className="text-lg font-semibold">
           nodeShop
         </NavLink>
-        <div className="hidden flex-1 items-center justify-center gap-2 md:flex">
+        <div className="Mega-Menu hidden flex-1 items-center justify-center gap-2 md:flex">
           <NavLink
             to="/new"
             className={({ isActive }) =>
@@ -72,38 +74,22 @@ export default function Navbar() {
           >
             New
           </NavLink>
-          <NavLink
-            to="/Men"
-            className={({ isActive }) =>
-              `${linkBase} ${isActive ? 'text-slate-900' : 'text-slate-500'}`
-            }
-          >
-            Men
-          </NavLink>
-          <NavLink
-            to="/Women"
-            className={({ isActive }) =>
-              `${linkBase} ${isActive ? 'text-slate-900' : 'text-slate-500'}`
-            }
-          >
-            Women
-          </NavLink>
-          <NavLink
-            to="/Kids"
-            className={({ isActive }) =>
-              `${linkBase} ${isActive ? 'text-slate-900' : 'text-slate-500'}`
-            }
-          >
-            Kids
-          </NavLink>
-          <NavLink
-            to="/Jordan"
-            className={({ isActive }) =>
-              `${linkBase} ${isActive ? 'text-slate-900' : 'text-slate-500'}`
-            }
-          >
-            Jordan
-          </NavLink>
+          {(['Men', 'Women', 'Kids'] as MegaMenuKey[]).map((menuKey) => (
+            <div
+              key={menuKey}
+              className="relative"
+              onMouseEnter={() => setActiveMenu(menuKey)}
+            >
+              <NavLink
+                to={`/${menuKey}`}
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? 'text-slate-900' : 'text-slate-500'}`
+                }
+              >
+                {menuKey}
+              </NavLink>
+            </div>
+          ))}
         </div>
         <div className="flex items-center gap-3">
           <label className="flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm text-slate-600">
@@ -194,6 +180,51 @@ export default function Navbar() {
           />
         </div>
       </nav>
+      <div
+        className={`fixed left-0 right-0 z-30 border-t border-slate-200 bg-white px-12 py-8 transition duration-200 ${
+          activeMenu
+            ? 'pointer-events-auto opacity-100 visible'
+            : 'pointer-events-none opacity-0 invisible'
+        }`}
+        style={{ top: 'var(--navbar-offset, 0px)' }}
+        onMouseEnter={() => {
+          if (activeMenu) {
+            setActiveMenu(activeMenu)
+          }
+        }}
+        onMouseLeave={() => setActiveMenu(null)}
+      >
+        {activeMenu && (
+          <div className="grid w-fit grid-cols-[repeat(3,max-content)] gap-10 text-sm text-slate-600">
+            {MEGA_MENU[activeMenu].map((section) => (
+              <div key={section.title} className="space-y-3">
+                <p className="text-l font-bold uppercase tracking-[0.2em] text-slate-800">
+                  {section.title}
+                </p>
+                <div className="grid gap-2">
+                  {section.items.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      className="text-left text-sm text-slate-700 transition hover:text-slate-900 hover:font-bold"
+                      onClick={() => {
+                        const query = buildCategoryQuery({
+                          categoryMain: section.title,
+                          categorySub: item,
+                        })
+                        navigate(`/${activeMenu ?? ''}?${query}`)
+                        setActiveMenu(null)
+                      }}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </header>
   )
 }
