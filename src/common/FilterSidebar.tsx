@@ -1,39 +1,24 @@
-import { useState } from 'react'
+import { FILTER_GROUPS } from '../const/FilterSidebar/const'
 
-const FILTER_GROUPS = [
-  { title: '성별', items: ['남성', '여성', '남녀공용'] },
-  { title: '스포츠', items: ['라이프스타일'] },
-  {
-    title: '가격대',
-    items: ['100,000 - 150,000 원', '150,000 - 200,000 원'],
-  },
-  {
-    title: '브랜드',
-    items: ['나이키 스포츠웨어', 'NikeLab'],
-  },
-  {
-    title: '색상',
-    colors: [
-      'bg-black',
-      'bg-white',
-      'bg-red-500',
-      'bg-emerald-500',
-      'bg-sky-500',
-      'bg-amber-500',
-      'bg-slate-400',
-      'bg-lime-500',
-    ],
-  },
-] as const
+type FilterKey = '성별' | '스포츠' | '가격대' | '브랜드' | '색상'
 
-export default function FilterSidebar() {
-  const [selectedColors, setSelectedColors] = useState<string[]>([])
+export type FilterState = {
+  성별: string[]
+  스포츠: string[]
+  가격대: string[]
+  브랜드: string[]
+  색상: string[]
+}
 
-  const toggleColor = (color: string) => {
-    setSelectedColors((prev) =>
-      prev.includes(color) ? prev.filter((item) => item !== color) : [...prev, color],
-    )
-  }
+type FilterSidebarProps = {
+  selectedFilters: FilterState
+  onToggleFilter: (group: FilterKey, value: string) => void
+}
+
+export default function FilterSidebar({
+  selectedFilters,
+  onToggleFilter,
+}: FilterSidebarProps) {
 
   return (
     <aside className="fade-up space-y-6 text-sm text-slate-600">
@@ -53,6 +38,12 @@ export default function FilterSidebar() {
                   <input
                     type="checkbox"
                     className="h-3.5 w-3.5 rounded border-slate-300"
+                    checked={selectedFilters[group.title as FilterKey].includes(
+                      item,
+                    )}
+                    onChange={() =>
+                      onToggleFilter(group.title as FilterKey, item)
+                    }
                   />
                   {item}
                 </label>
@@ -65,14 +56,14 @@ export default function FilterSidebar() {
                 <button
                   key={color}
                   className={`h-5 w-5 rounded-full border ${color} ${
-                    selectedColors.includes(color)
+                    selectedFilters['색상'].includes(color)
                       ? 'border-slate-900 ring-2 ring-slate-900'
                       : 'border-slate-200'
                   }`}
                   type="button"
                   aria-label={`색상 ${color.replace('bg-', '')}`}
-                  aria-pressed={selectedColors.includes(color)}
-                  onClick={() => toggleColor(color)}
+                  aria-pressed={selectedFilters['색상'].includes(color)}
+                  onClick={() => onToggleFilter('색상', color)}
                 />
               ))}
             </div>
