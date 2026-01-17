@@ -193,10 +193,10 @@ export default function Navbar() {
         onMouseLeave={() => setActiveMenu(null)}
       >
         {activeMenu && (
-          <div className="grid grid-cols-3 gap-10 text-sm text-slate-600">
+          <div className="grid w-fit grid-cols-[repeat(3,max-content)] gap-10 text-sm text-slate-600">
             {MEGA_MENU[activeMenu].map((section) => (
               <div key={section.title} className="space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <p className="text-l font-bold uppercase tracking-[0.2em] text-slate-800">
                   {section.title}
                 </p>
                 <div className="grid gap-2">
@@ -204,7 +204,7 @@ export default function Navbar() {
                     <button
                       key={item}
                       type="button"
-                      className="text-left text-sm text-slate-700 transition hover:text-slate-900"
+                      className="text-left text-sm text-slate-700 transition hover:text-slate-900 hover:font-bold"
                     >
                       {item}
                     </button>
