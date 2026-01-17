@@ -19,12 +19,12 @@ export default function ProductCard({
         <img
           src={product.image[0]}
           alt={product.name}
-          className="h-[508px] w-[508px] bg-slate-100 object-cover"
+          className="aspect-square w-full bg-slate-100 object-cover"
           loading="lazy"
         />
       ) : (
-          <div className="h-[508px] w-[508px] bg-slate-100" />
-        )}
+        <div className="aspect-square w-full bg-slate-100" />
+      )}
         <div className="space-y-1">
           <p className="text-xs uppercase tracking-[0.2em] text-rose-500">
             {product.status}
