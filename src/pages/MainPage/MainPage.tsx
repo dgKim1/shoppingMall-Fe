@@ -3,24 +3,48 @@ import { useSearchParams } from 'react-router-dom'
 import { Button, Dropdown, FilterSidebar } from '../../common'
 import type { FilterState } from '../../components/FilterSidebar'
 import useGetAllProducts from '../../hooks/product/useGetAllProducts'
+import useSearchProducts from '../../hooks/product/useSearchProducts'
 import ProductCard from './component/ProductCard'
 
 export default function MainPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [sortOption, setSortOption] = useState('선택안함')
   const {
-    data: productsResponse,
-    isLoading,
-    isError,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+    data: allProductsResponse,
+    isLoading: isAllLoading,
+    isError: isAllError,
+    fetchNextPage: fetchAllNextPage,
+    hasNextPage: hasAllNextPage,
+    isFetchingNextPage: isFetchingAllNextPage,
   } = useGetAllProducts({
     limit: 9,
     sort: sortOption === '선택안함' ? undefined : sortOption,
   })
-  const products = productsResponse?.pages.flatMap((page) => page.data) ?? []
-  const totalCount = productsResponse?.pages[0]?.total ?? products.length
+  const [searchTerm, setSearchTerm] = useState<string | null>(null)
+  const isSearching = Boolean(searchTerm)
+  const {
+    data: searchProductsResponse,
+    isLoading: isSearchLoading,
+    isError: isSearchError,
+    fetchNextPage: fetchSearchNextPage,
+    hasNextPage: hasSearchNextPage,
+    isFetchingNextPage: isFetchingSearchNextPage,
+  } = useSearchProducts(
+    { name: searchTerm ?? undefined, limit: 9 },
+    { enabled: isSearching },
+  )
+  const activeResponse = isSearching
+    ? searchProductsResponse
+    : allProductsResponse
+  const products = activeResponse?.pages.flatMap((page) => page.data) ?? []
+  const totalCount = activeResponse?.pages[0]?.total ?? products.length
+  const isLoading = isSearching ? isSearchLoading : isAllLoading
+  const isError = isSearching ? isSearchError : isAllError
+  const hasNextPage = isSearching ? hasSearchNextPage : hasAllNextPage
+  const fetchNextPage = isSearching ? fetchSearchNextPage : fetchAllNextPage
+  const isFetchingNextPage = isSearching
+    ? isFetchingSearchNextPage
+    : isFetchingAllNextPage
   const formatPrice = (price: number) =>
     `${new Intl.NumberFormat('ko-KR').format(price)} 원`
   const sentinelRef = useRef<HTMLDivElement | null>(null)
@@ -34,6 +58,7 @@ export default function MainPage() {
   const [categoryMain, setCategoryMain] = useState<string | null>(null)
   const [categorySub, setCategorySub] = useState<string | null>(null)
   const [isSidebarVisible, setIsSidebarVisible] = useState(true)
+  const syncingFromUrlRef = useRef(false)
 
   const toggleFilter = (group: keyof FilterState, value: string) => {
     setFilters((prev) => ({
@@ -45,6 +70,7 @@ export default function MainPage() {
   }
 
   useEffect(() => {
+    syncingFromUrlRef.current = true
     const readValues = (key: keyof FilterState) =>
       searchParams.get(key)?.split(',').filter(Boolean) ?? []
 
@@ -57,9 +83,15 @@ export default function MainPage() {
     })
     setCategoryMain(searchParams.get('categoryMain'))
     setCategorySub(searchParams.get('categorySub'))
+    setSearchTerm(searchParams.get('name'))
   }, [searchParams])
 
   useEffect(() => {
+    if (syncingFromUrlRef.current) {
+      syncingFromUrlRef.current = false
+      return
+    }
+
     const nextParams = new URLSearchParams()
     ;(Object.keys(filters) as (keyof FilterState)[]).forEach((key) => {
       if (filters[key].length > 0) {
@@ -72,11 +104,21 @@ export default function MainPage() {
     if (categorySub) {
       nextParams.set('categorySub', categorySub)
     }
+    if (searchTerm) {
+      nextParams.set('name', searchTerm)
+    }
 
     if (nextParams.toString() !== searchParams.toString()) {
       setSearchParams(nextParams, { replace: true })
     }
-  }, [categoryMain, categorySub, filters, searchParams, setSearchParams])
+  }, [
+    categoryMain,
+    categorySub,
+    filters,
+    searchParams,
+    searchTerm,
+    setSearchParams,
+  ])
 
   const parsePriceRange = (label: string) => {
     const numbers = label

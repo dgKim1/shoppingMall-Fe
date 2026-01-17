@@ -13,6 +13,7 @@ export default function Navbar() {
   const [offset, setOffset] = useState(0)
   const [activeMenu, setActiveMenu] = useState<MegaMenuKey | null>(null)
   const [loggedIn, setLoggedIn] = useState(isAuthenticated())
+  const [searchValue, setSearchValue] = useState('')
   const navigate = useNavigate()
   const logoutMutation = useLogout({
     onSuccess: () => {
@@ -115,7 +116,20 @@ export default function Navbar() {
           ))}
         </div>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm text-slate-600">
+          <form
+            className="flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm text-slate-600"
+            onSubmit={(event) => {
+              event.preventDefault()
+              const keyword = searchValue.trim()
+              const params = new URLSearchParams()
+              if (keyword) {
+                params.set('name', keyword)
+                navigate(`/?${params.toString()}`)
+              } else {
+                navigate('/')
+              }
+            }}
+          >
             <svg
               aria-hidden="true"
               viewBox="0 0 24 24"
@@ -131,9 +145,11 @@ export default function Navbar() {
             <input
               type="text"
               placeholder="검색"
+              value={searchValue}
+              onChange={(event) => setSearchValue(event.target.value)}
               className="w-28 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-500 sm:w-36"
             />
-          </label>
+          </form>
           <Button
             type="button"
             variant="ghost"
