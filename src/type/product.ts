@@ -8,7 +8,7 @@ export interface ProductInput {
   category: string[];
   gender?: string;
   brand?: string;
-  color?: string;
+  color?: string[];
   status: string;
   isDeleted?: boolean;
   createdAt?: string;

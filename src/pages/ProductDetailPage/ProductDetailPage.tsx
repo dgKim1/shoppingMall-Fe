@@ -128,7 +128,7 @@ export default function ProductDetailPage() {
                   <button
                     type="button"
                     className={`h-14 w-14 rounded-xl border border-slate-200 ${
-                      product?.color ?? 'bg-slate-200'
+                      product?.color?.[0] ?? 'bg-slate-200'
                     }`}
                     aria-label="color option 1"
                   />

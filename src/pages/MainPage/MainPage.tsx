@@ -1,9 +1,12 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Button, Dropdown, FilterSidebar } from '../../common'
+import type { FilterState } from '../../common/FilterSidebar'
 import useGetAllProducts from '../../hooks/product/useGetAllProducts'
 import ProductCard from './component/ProductCard'
 
 export default function MainPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const {
     data: productsResponse,
     isLoading,
@@ -17,6 +20,114 @@ export default function MainPage() {
   const formatPrice = (price: number) =>
     `${new Intl.NumberFormat('ko-KR').format(price)} 원`
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const [filters, setFilters] = useState<FilterState>({
+    성별: [],
+    스포츠: [],
+    가격대: [],
+    브랜드: [],
+    색상: [],
+  })
+  const initializedRef = useRef(false)
+
+  const toggleFilter = (group: keyof FilterState, value: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      [group]: prev[group].includes(value)
+        ? prev[group].filter((item) => item !== value)
+        : [...prev[group], value],
+    }))
+  }
+
+  useEffect(() => {
+    if (initializedRef.current) {
+      return
+    }
+
+    const readValues = (key: keyof FilterState) =>
+      searchParams.get(key)?.split(',').filter(Boolean) ?? []
+
+    setFilters({
+      성별: readValues('성별'),
+      스포츠: readValues('스포츠'),
+      가격대: readValues('가격대'),
+      브랜드: readValues('브랜드'),
+      색상: readValues('색상'),
+    })
+    initializedRef.current = true
+  }, [searchParams])
+
+  useEffect(() => {
+    if (!initializedRef.current) {
+      return
+    }
+
+    const nextParams = new URLSearchParams()
+    ;(Object.keys(filters) as (keyof FilterState)[]).forEach((key) => {
+      if (filters[key].length > 0) {
+        nextParams.set(key, filters[key].join(','))
+      }
+    })
+
+    setSearchParams(nextParams, { replace: true })
+  }, [filters, setSearchParams])
+
+  const parsePriceRange = (label: string) => {
+    const numbers = label
+      .replace(/[^0-9-]/g, '')
+      .split('-')
+      .map((item) => Number(item))
+      .filter((item) => !Number.isNaN(item))
+    if (numbers.length >= 2) {
+      return { min: numbers[0], max: numbers[1] }
+    }
+    return null
+  }
+
+  const hasActiveFilters = Object.values(filters).some(
+    (values) => values.length > 0,
+  )
+  const filteredProducts = useMemo(() => {
+    if (!hasActiveFilters) {
+      return products
+    }
+
+    return products.filter((product) => {
+      const matchesGender =
+        filters.성별.length === 0 ||
+        (product.gender && filters.성별.includes(product.gender))
+      const matchesBrand =
+        filters.브랜드.length === 0 ||
+        (product.brand && filters.브랜드.includes(product.brand))
+      const matchesSport =
+        filters.스포츠.length === 0 ||
+        (product.category &&
+          product.category.some((item) => filters.스포츠.includes(item)))
+      const matchesColor =
+        filters.색상.length === 0 ||
+        (product.color &&
+          product.color.some((color) => filters.색상.includes(color)))
+      const matchesPrice =
+        filters.가격대.length === 0 ||
+        filters.가격대.some((range) => {
+          const parsed = parsePriceRange(range)
+          if (!parsed) {
+            return false
+          }
+          return product.price >= parsed.min && product.price <= parsed.max
+        })
+
+      return (
+        matchesGender &&
+        matchesBrand &&
+        matchesSport &&
+        matchesColor &&
+        matchesPrice
+      )
+    })
+  }, [filters, hasActiveFilters, products])
+  const displayCount = hasActiveFilters
+    ? filteredProducts.length
+    : totalCount
   const titleRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -65,7 +176,7 @@ export default function MainPage() {
         <div className="mt-4 flex flex-wrap items-center justify-between gap-6">
           <div>
             <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-              아스트로그래버 ({totalCount})
+              아스트로그래버 ({displayCount})
             </h1>
             <p className="mt-2 text-sm text-slate-500">
               레트로 감성으로 완성한 데일리 스니커즈 컬렉션
@@ -95,7 +206,7 @@ export default function MainPage() {
             top: 'calc(var(--navbar-offset, 0px) + var(--title-section-offset, 0px))',
           }}
         >
-          <FilterSidebar />
+          <FilterSidebar selectedFilters={filters} onToggleFilter={toggleFilter} />
         </aside>
         <div className="products-section grid flex-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading && (
@@ -110,7 +221,7 @@ export default function MainPage() {
           )}
           {!isLoading &&
             !isError &&
-            products.map((item, index) => (
+            filteredProducts.map((item, index) => (
               <ProductCard
                 key={`${item.sku}-${index}`}
                 product={item}
