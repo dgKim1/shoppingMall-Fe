@@ -7,6 +7,7 @@ import ProductCard from './component/ProductCard'
 
 export default function MainPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const [sortOption, setSortOption] = useState('선택안함')
   const {
     data: productsResponse,
     isLoading,
@@ -14,7 +15,10 @@ export default function MainPage() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useGetAllProducts({ limit: 9 })
+  } = useGetAllProducts({
+    limit: 9,
+    sort: sortOption === '선택안함' ? undefined : sortOption,
+  })
   const products = productsResponse?.pages.flatMap((page) => page.data) ?? []
   const totalCount = productsResponse?.pages[0]?.total ?? products.length
   const formatPrice = (price: number) =>
@@ -208,12 +212,19 @@ export default function MainPage() {
               {isSidebarVisible ? '필터 숨기기' : '필터 표시'}
             </Button>
             <Dropdown
-              label="정렬 기준: 추천순"
+              label={`정렬 기준: ${sortOption}`}
               items={[
-                { label: '추천순' },
-                { label: '신상품' },
-                { label: '가격 낮은순' },
-                { label: '가격 높은순' },
+                { label: '선택안함', onSelect: () => setSortOption('선택안함') },
+                { label: '추천순', onSelect: () => setSortOption('추천순') },
+                { label: '신상품', onSelect: () => setSortOption('신상품') },
+                {
+                  label: '가격 낮은순',
+                  onSelect: () => setSortOption('가격 낮은순'),
+                },
+                {
+                  label: '가격 높은순',
+                  onSelect: () => setSortOption('가격 높은순'),
+                },
               ]}
             />
           </div>
