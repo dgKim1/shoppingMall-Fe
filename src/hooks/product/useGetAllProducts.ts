@@ -13,11 +13,21 @@ export interface ProductsResponse {
 export interface GetAllProductsParams {
   limit?: number;
   sort?: string;
+  categoryMain?: string;
+  categorySub?: string;
+  personType?: string;
 }
 
 const getAllProducts = async (page: number, params: GetAllProductsParams) => {
   const { data } = await api.get("/product/getAllProducts", {
-    params: { page, limit: params.limit, sort: params.sort },
+    params: {
+      page,
+      limit: params.limit,
+      sort: params.sort,
+      categoryMain: params.categoryMain,
+      categorySub: params.categorySub,
+      personType: params.personType,
+    },
   });
   return data as ProductsResponse;
 };

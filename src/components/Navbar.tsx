@@ -211,6 +211,7 @@ export default function Navbar() {
                         const query = buildCategoryQuery({
                           categoryMain: section.title,
                           categorySub: item,
+                          personType: activeMenu
                         })
                         navigate(`/${activeMenu ?? ''}?${query}`)
                         setActiveMenu(null)
