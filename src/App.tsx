@@ -11,6 +11,7 @@ import MenProductPage from './pages/MenProductPage/MenProductPage'
 import WomenProductPage from './pages/WomenProductPage/WomenProductPage'
 import KidsProductPage from './pages/KidsProductPage/KidsProductPage'
 import LoginPage from './pages/LoginPage/LoginPage'
+import WishListPage from './pages/WishListPage/WishListPage'
 
 function Layout({ children }: { children: ReactNode }) {
   return (
@@ -79,6 +80,14 @@ function App() {
           element={
             <Layout>
               <CartPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/wishList"
+          element={
+            <Layout>
+              <WishListPage />
             </Layout>
           }
         />

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { CartIcon, HeartIcon } from '../../common'
+import useAddToWishlist from '../../hooks/wishlist/useAddToWishlist'
 import useAddToCart from '../../hooks/cart/useAddToCart'
 import useGetProductBySku from '../../hooks/product/useGetProductBySku'
 
@@ -17,7 +18,9 @@ export default function ProductDetailPage() {
   const [selectedSize, setSelectedSize] = useState<string | null>(null)
   const [selectedColor, setSelectedColor] = useState<string | null>(null)
   const [cartError, setCartError] = useState<string | null>(null)
+  const [wishlistError, setWishlistError] = useState<string | null>(null)
   const addToCart = useAddToCart()
+  const addToWishlist = useAddToWishlist()
   const formatPrice = (price?: number) =>
     typeof price === 'number'
       ? `${new Intl.NumberFormat('ko-KR').format(price)} 원`
@@ -32,6 +35,7 @@ export default function ProductDetailPage() {
     setSelectedSize(null)
     setSelectedColor(null)
     setCartError(null)
+    setWishlistError(null)
   }, [product?.sku])
 
   const sizeOptions = useMemo(() => {
@@ -238,6 +242,15 @@ export default function ProductDetailPage() {
                 <button
                   type="button"
                   className="relative flex h-12 w-full items-center justify-center rounded-full border border-slate-200 text-sm font-semibold leading-none text-slate-700"
+                  onClick={() => {
+                    if (!product?._id) {
+                      setWishlistError('위시리스트 추가 실패. 해당 제품은 존재하지 않는 제품입니다')
+                      return
+                    }
+                    setWishlistError(null)
+                    addToWishlist.mutate({ productId: product._id })
+                  }}
+                  disabled={addToWishlist.isPending}
                 >
                   <span className="absolute left-5 flex h-5 w-5 items-center justify-center">
                     <HeartIcon className="h-5 w-5" />
@@ -247,9 +260,17 @@ export default function ProductDetailPage() {
                 {cartError && (
                   <p className="text-xs text-rose-500">{cartError}</p>
                 )}
+                {wishlistError && (
+                  <p className="text-xs text-rose-500">{wishlistError}</p>
+                )}
                 {addToCart.isError && (
                   <p className="text-xs text-rose-500">
                     장바구니 담기에 실패했습니다.
+                  </p>
+                )}
+                {addToWishlist.isError && (
+                  <p className="text-xs text-rose-500">
+                    {"위시리스트 추가에 실패했습니다"}
                   </p>
                 )}
               </div>
