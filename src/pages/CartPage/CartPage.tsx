@@ -1,24 +1,28 @@
 import useGetCartItems from '../../hooks/cart/useGetCartItems'
+import useCreateOrder from '../../hooks/order/useCreateOrder'
 import { useAuth } from '../../context/AuthContext'
-import type { ProductInput } from '../../type/product'
+import type { ProductType } from '../../type/product'
 
 export default function CartPage() {
   const { user } = useAuth()
-  const { data: cartResponse, isLoading, isError } = useGetCartItems({
+  const { data: cartData, isLoading, isError } = useGetCartItems({
     userId: user?._id,
   })
-  const cartItems = cartResponse?.data ?? []
-  const getProductLabel = (product?: ProductInput) =>
+  const createOrder = useCreateOrder()
+  const cartItems = cartData?.data ?? []
+  const getProductLabel = (product?: ProductType) =>
     product?.name ?? product?._id ?? '알 수 없는 상품'
 
-  const getProductImage = (product?: ProductInput) =>
+  const getProductImage = (product?: ProductType) =>
     product?.image?.[0] ?? null
 
+  console.log("장바구니 데ㅌ이터",cartItems);
+  
   return (
     <section className="mx-auto max-w-6xl px-6 py-16">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-semibold">Cart</h1>
+          <h1 className="text-3xl font-semibold">장바구니</h1>
           <p className="mt-2 text-sm text-slate-500">
             담긴 상품 {cartItems.length}개
           </p>
@@ -26,16 +30,29 @@ export default function CartPage() {
         <button
           type="button"
           className="h-11 rounded-full bg-slate-900 px-6 text-sm font-semibold text-white"
+          onClick={() => {
+            createOrder.mutate({ shipTo: 'Seoul, KR' })
+          }}
+          disabled={createOrder.isPending || cartItems.length === 0}
         >
-          주문하기
+          {createOrder.isPending ? '주문 중...' : '주문하기'}
         </button>
       </div>
+      {createOrder.isError && (
+        <p className="mt-4 text-sm text-rose-500">
+          주문 처리에 실패했습니다.
+        </p>
+      )}
 
       {isLoading && (
-        <p className="mt-8 text-sm text-slate-500">장바구니를 불러오는 중입니다...</p>
+        <p className="mt-8 text-sm text-slate-500">
+          장바구니를 불러오는 중입니다...
+        </p>
       )}
       {isError && (
-        <p className="mt-8 text-sm text-rose-500">장바구니를 불러오지 못했습니다.</p>
+        <p className="mt-8 text-sm text-rose-500">
+          장바구니를 불러오지 못했습니다.
+        </p>
       )}
       {!isLoading && !isError && (
         <div className="mt-8 space-y-4">
