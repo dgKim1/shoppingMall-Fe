@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button, Dropdown, FilterSidebar } from '../../common'
 import type { FilterState } from '../../components/FilterSidebar'
-import type { ProductInput } from '../../type/product'
+import type { ProductType } from '../../type/product'
 import useGetAllProducts from '../../hooks/product/useGetAllProducts'
 import useSearchProducts from '../../hooks/product/useSearchProducts'
 import ProductCard from './component/ProductCard'
@@ -39,7 +39,7 @@ export default function MainPage() {
     : allProductsResponse
   const products = activeResponse?.pages.flatMap((page) => page.data) ?? []
   const safeProducts = useMemo(
-    () => products.filter((item): item is ProductInput => Boolean(item)),
+    () => products.filter((item): item is ProductType => Boolean(item)),
     [products],
   )
   const totalCount = activeResponse?.pages[0]?.total ?? products.length

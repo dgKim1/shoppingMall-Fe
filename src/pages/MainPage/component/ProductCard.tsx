@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
-import type { ProductInput } from '../../../type/product'
+import type { ProductType } from '../../../type/product'
 
 type ProductCardProps = {
-  product: ProductInput
+  product: ProductType
   index: number
   priceLabel: string
 }

@@ -19,7 +19,7 @@ const useGetCartItems = (options: { enabled?: boolean; userId?: string } = {}) =
   useQuery({
     queryKey: ["cart", "items", options.userId],
     queryFn: () => getCartItems(options.userId),
-    enabled: Boolean(options.userId) && (options.enabled ?? true),
+    enabled: Boolean(options.userId) && (options.enabled ?? true),//userId가 있고(로그인된 상태) 옵셔으로 받은 enabled가 true일 경우 api 요청
   });
 
 export default useGetCartItems;

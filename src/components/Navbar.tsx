@@ -6,6 +6,7 @@ import { buildCategoryQuery } from '../utils/query'
 import useLogout from '../hooks/auth/useLogout'
 import useGetCartItems from '../hooks/cart/useGetCartItems'
 import { useAuth } from '../context/AuthContext'
+import './style.css'
 export type MegaMenuKey = keyof typeof MEGA_MENU
 export default function Navbar() {
   const headerRef = useRef<HTMLElement>(null)
@@ -16,12 +17,13 @@ export default function Navbar() {
   const { token, user, clearAuth } = useAuth()
   const [searchValue, setSearchValue] = useState('')
   const navigate = useNavigate()
-  const loggedIn = Boolean(token)
+  const isLogIn = Boolean(token)
   const { data: cartResponse } = useGetCartItems({
-    enabled: loggedIn,
-    userId: user?._id ?? undefined,
+    enabled: isLogIn,
+    userId: user?._id,
   })
-  const cartCount = cartResponse?.data?.length ?? 0
+  const cartItems = cartResponse?.data ?? []
+  const cartCount = cartItems.length
   const logoutMutation = useLogout({
     onSuccess: () => {
       clearAuth()
@@ -74,32 +76,23 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-
   return (
     <header
       ref={headerRef}
-      className={`fixed left-0 right-0 top-0 z-40 border-b border-slate-200 bg-white transition-transform duration-300 ${
+      className={`fixed flex items-center h-[100px] left-0 right-0 top-0 z-40 border-b border-slate-200 bg-white transition-transform duration-300 ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
       onMouseLeave={() => setActiveMenu(null)}
     >
-      <nav className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
-        <NavLink to="/" className="text-lg font-semibold">
-          nodeShop
+      <nav className=" flex mx-[60px] w-full items-center gap-6 px-6 py-4">
+        <NavLink to="/" className="text-2xl font-semibold">
+          SelectLife
         </NavLink>
-        <div className="Mega-Menu hidden flex-1 items-center justify-center gap-2 md:flex">
-          <NavLink
-            to="/new"
-            className={({ isActive }) =>
-              `${linkBase} ${isActive ? 'text-slate-900' : 'text-slate-500'}`
-            }
-          >
-            New
-          </NavLink>
-          {(['Men', 'Women', 'Kids'] as MegaMenuKey[]).map((menuKey) => (
+        <div className="Navbar-Menu hidden flex-1 items-center justify-center gap-2 md:flex">
+          {(['New','Men', 'Women', 'Kids'] as MegaMenuKey[]).map((menuKey) => (
             <div
               key={menuKey}
-              className="relative"
+              className="relative flex"
               onMouseEnter={() => setActiveMenu(menuKey)}
             >
               <NavLink
@@ -115,7 +108,7 @@ export default function Navbar() {
         </div>
         <div className="flex items-center gap-3">
           <form
-            className="flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm text-slate-600"
+            className="flex text-xl items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm text-slate-600"
             onSubmit={(event) => {
               event.preventDefault()
               const keyword = searchValue.trim()
@@ -131,9 +124,9 @@ export default function Navbar() {
             <svg
               aria-hidden="true"
               viewBox="0 0 24 24"
-              className="h-[18px] w-[18px] shrink-0 stroke-slate-500"
-              width="18"
-              height="18"
+              className="h-[30px] w-[30px] shrink-0 stroke-slate-500"
+              width="30"
+              height="30"
               fill="none"
               strokeWidth="2"
             >
@@ -158,9 +151,9 @@ export default function Navbar() {
             <svg
               aria-hidden="true"
               viewBox="0 0 24 24"
-              className="h-[18px] w-[18px] shrink-0"
-              width="18"
-              height="18"
+              className="h-[30px] w-[30px] shrink-0"
+              width="30"
+              height="30"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.6"
@@ -172,16 +165,16 @@ export default function Navbar() {
             type="button"
             variant="ghost"
             size="sm"
-            className="h-9 w-9 rounded-full p-0"
+            className="relative h-9 w-9 rounded-full p-0"
             aria-label="장바구니"
             onClick={() => navigate('/cart')}
           >
             <svg
               aria-hidden="true"
               viewBox="0 0 24 24"
-              className="h-[18px] w-[18px] shrink-0"
-              width="18"
-              height="18"
+              className="h-[30px] w-[30px] shrink-0"
+              width="30"
+              height="30"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.6"
@@ -190,14 +183,14 @@ export default function Navbar() {
               <path d="M9 7V6a3 3 0 0 1 6 0v1" />
             </svg>
             {cartCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-slate-900 px-1 text-[10px] font-semibold text-white">
+              <span className="absolute z-35 right-[1px] top-[4px] flex h-4 min-w-[16px] items-center justify-center rounded-full bg-slate-900 px-1 text-[10px] font-semibold text-white">
                 {cartCount}
               </span>
             )}
           </Button>
           <Dropdown
             items={
-              loggedIn
+              isLogIn
                 ? [
                     {
                       label: '로그아웃',
@@ -226,9 +219,9 @@ export default function Navbar() {
                 <svg
                   aria-hidden="true"
                   viewBox="0 0 24 24"
-                  className="h-[18px] w-[18px] shrink-0"
-                  width="18"
-                  height="18"
+                  className="h-[30px] w-[30px] shrink-0"
+                  width="30"
+                  height="30"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="1.6"
@@ -241,6 +234,7 @@ export default function Navbar() {
           />
         </div>
       </nav>
+      {/* MegaMenu 영역 */}
       <div
         className={`fixed left-0 right-0 z-30 border-t border-slate-200 bg-white px-12 py-8 transition duration-200 ${
           activeMenu
