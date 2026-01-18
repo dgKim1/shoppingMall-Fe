@@ -7,7 +7,6 @@ import { AuthProvider } from './context/AuthContext'
 
 const queryClient = new QueryClient()
 
-const queryClient = new QueryClient()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -147,6 +147,7 @@ export default function Navbar() {
             size="sm"
             className="relative h-9 w-9 rounded-full p-0"
             aria-label="찜"
+            onClick={() => navigate('/wishList')}
           >
             <HeartIcon className="h-[30px] w-[30px] shrink-0" />
           </Button>
