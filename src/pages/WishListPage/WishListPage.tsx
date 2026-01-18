@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import useGetWishlist from '../../hooks/wishlist/useGetWishlist'
 import useRemoveFromWishlist from '../../hooks/wishlist/useRemoveFromWishlist'
+import WishListCard from './component/WishListCard'
 
 export default function WishListPage() {
   const { token } = useAuth()
@@ -9,7 +9,7 @@ export default function WishListPage() {
   const removeFromWishlist = useRemoveFromWishlist()
   const items = data?.data ?? []
   const formatPrice = (price: number) =>
-    `${new Intl.NumberFormat('ko-KR').format(price)} ??`
+    `${new Intl.NumberFormat('ko-KR').format(price)}`
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-16">
@@ -40,46 +40,15 @@ export default function WishListPage() {
       {token && !isLoading && !isError && items.length > 0 && (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {items.map((item) => (
-            <article key={item._id ?? item.sku} className="space-y-3">
-              <div className="relative overflow-hidden rounded-2xl bg-slate-100">
-                <Link to={`/product/${item.sku}`}>
-                  {item.image?.[0] ? (
-                    <img
-                      src={item.image[0]}
-                      alt={item.name}
-                      className="aspect-[3/4] w-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="aspect-[3/4] w-full bg-slate-200" />
-                  )}
-                </Link>
-                <button
-                  type="button"
-                  className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-700 shadow"
-                  onClick={() => {
-                    if (!item._id) {
-                      return
-                    }
-                    removeFromWishlist.mutate({ productId: item._id })
-                  }}
-                  disabled={!item._id || removeFromWishlist.isPending}
-                >
-                  Remove
-                </button>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-slate-400">
-                  {item.categorySub ?? item.categoryMain ?? '-'}
-                </p>
-                <h3 className="text-sm font-semibold text-slate-900">
-                  {item.name}
-                </h3>
-                <p className="text-sm font-semibold text-slate-900">
-                  {formatPrice(item.price)}
-                </p>
-              </div>
-            </article>
+            <WishListCard
+              key={item._id ?? item.sku}
+              item={item}
+              priceLabel={formatPrice(item.price)}
+              isRemoving={removeFromWishlist.isPending}
+              onRemove={(productId) => {
+                removeFromWishlist.mutate({ productId })
+              }}
+            />
           ))}
         </div>
       )}
