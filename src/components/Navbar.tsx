@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Button, Dropdown } from '../common'
+import { Button, CartIcon, Dropdown, HeartIcon, UserIcon } from '../common'
 import { linkBase, MEGA_MENU } from '../const/NavBar/const'
 import { buildCategoryQuery } from '../utils/query'
 import useLogout from '../hooks/auth/useLogout'
@@ -148,18 +148,7 @@ export default function Navbar() {
             className="relative h-9 w-9 rounded-full p-0"
             aria-label="찜"
           >
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="h-[30px] w-[30px] shrink-0"
-              width="30"
-              height="30"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-            >
-              <path d="M12 20s-6-4.3-8.5-7.6C1.6 10.3 2.1 7.5 4 6a4.5 4.5 0 0 1 6 1.1L12 9l2-1.9A4.5 4.5 0 0 1 20 6c1.9 1.5 2.4 4.3.5 6.4C18 15.7 12 20 12 20z" />
-            </svg>
+            <HeartIcon className="h-[30px] w-[30px] shrink-0" />
           </Button>
           <Button
             type="button"
@@ -169,21 +158,9 @@ export default function Navbar() {
             aria-label="장바구니"
             onClick={() => navigate('/cart')}
           >
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="h-[30px] w-[30px] shrink-0"
-              width="30"
-              height="30"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-            >
-              <path d="M7 7h10l1 10H6L7 7z" />
-              <path d="M9 7V6a3 3 0 0 1 6 0v1" />
-            </svg>
+            <CartIcon className="h-[30px] w-[30px] shrink-0" />
             {cartCount > 0 && (
-              <span className="absolute z-35 right-[1px] top-[4px] flex h-4 min-w-[16px] items-center justify-center rounded-full bg-slate-900 px-1 text-[10px] font-semibold text-white">
+              <span className="absolute right-[1px] top-[4px] z-30 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-slate-900 px-1 text-[10px] font-semibold text-white">
                 {cartCount}
               </span>
             )}
@@ -216,19 +193,7 @@ export default function Navbar() {
                 className="h-9 w-9 rounded-full p-0"
                 aria-label="내 정보"
               >
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  className="h-[30px] w-[30px] shrink-0"
-                  width="30"
-                  height="30"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                >
-                  <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4z" />
-                  <path d="M4 20a8 8 0 0 1 16 0" />
-                </svg>
+                <UserIcon className="h-[30px] w-[30px] shrink-0" />
               </Button>
             )}
           />

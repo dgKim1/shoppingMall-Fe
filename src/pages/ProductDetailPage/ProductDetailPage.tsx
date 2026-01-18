@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { CartIcon, HeartIcon } from '../../common'
 import useAddToCart from '../../hooks/cart/useAddToCart'
 import useGetProductBySku from '../../hooks/product/useGetProductBySku'
 
@@ -205,7 +206,7 @@ export default function ProductDetailPage() {
               <div className="space-y-3">
                 <button
                   type="button"
-                  className="h-12 w-full rounded-full bg-slate-900 text-sm font-semibold text-white"
+                  className="relative flex h-12 w-full items-center justify-center rounded-full bg-slate-900 text-sm font-semibold leading-none text-white"
                   onClick={() => {
                     if (!product?._id) {
                       setCartError('상품 정보를 찾을 수 없습니다.')
@@ -229,13 +230,19 @@ export default function ProductDetailPage() {
                   }}
                   disabled={addToCart.isPending}
                 >
+                  <span className="absolute left-5 flex h-5 w-5 items-center justify-center">
+                    <CartIcon className="h-8 w-8" />
+                  </span>
                   {addToCart.isPending ? '담는 중...' : '장바구니'}
                 </button>
                 <button
                   type="button"
-                  className="h-12 w-full rounded-full border border-slate-200 text-sm font-semibold text-slate-700"
+                  className="relative flex h-12 w-full items-center justify-center rounded-full border border-slate-200 text-sm font-semibold leading-none text-slate-700"
                 >
-                  위시리스트 ♡
+                  <span className="absolute left-5 flex h-5 w-5 items-center justify-center">
+                    <HeartIcon className="h-5 w-5" />
+                  </span>
+                  위시리스트
                 </button>
                 {cartError && (
                   <p className="text-xs text-rose-500">{cartError}</p>
