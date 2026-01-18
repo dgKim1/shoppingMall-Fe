@@ -39,11 +39,32 @@ export default function ProductDetailPage() {
   }, [product?.sku])
 
   const sizeOptions = useMemo(() => {
+    const category = product?.categoryMain
     if (product?.stock) {
       return Object.keys(product.stock)
     }
+    if (category === '신발') {
+      return Array.from({ length: 11 }, (_, index) => `${235 + index * 5}`)
+    }
+    if (category === '액세서리') {
+      return ['S', 'M', 'L']
+    }
+    if (category === '의류') {
+      return ['S', 'M', 'L', 'XL', 'XXL']
+    }
     return ['2T', '3T', '4T', '5T', '6T', '7T']
-  }, [product?.stock])
+  }, [product?.categoryMain, product?.stock])
+
+  const normalizeSize = (value: string) => {
+    const mapping: Record<string, string> = {
+      '90': 'S',
+      '95': 'M',
+      '100': 'L',
+      '105': 'XL',
+      '110': 'XXL',
+    }
+    return mapping[value] ?? value
+  }
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-16">
@@ -227,7 +248,7 @@ export default function ProductDetailPage() {
                     setCartError(null)
                     addToCart.mutate({
                       productId: product._id,
-                      size: selectedSize,
+                      size: normalizeSize(selectedSize),
                       color: selectedColor,
                       quantity: 1,
                     })
