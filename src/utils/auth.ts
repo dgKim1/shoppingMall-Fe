@@ -1,6 +1,6 @@
 export type AuthPayload = {
   token?: string
-  user?: unknown
+  user?: { _id?: string }
   [key: string]: unknown
 }
 
@@ -34,6 +34,11 @@ export const getAuth = () => {
 
 export const isAuthenticated = () => {
   const auth = getAuth()
-  const token = auth?.token ?? auth?.accessToken
+  const token = auth?.token
   return Boolean(token)
+}
+
+export const getUserId = () => {
+  const auth = getAuth()
+  return auth?.user?._id ?? null
 }

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button, Dropdown, FilterSidebar } from '../../common'
 import type { FilterState } from '../../components/FilterSidebar'
+import type { ProductInput } from '../../type/product'
 import useGetAllProducts from '../../hooks/product/useGetAllProducts'
 import useSearchProducts from '../../hooks/product/useSearchProducts'
 import ProductCard from './component/ProductCard'
@@ -37,6 +38,10 @@ export default function MainPage() {
     ? searchProductsResponse
     : allProductsResponse
   const products = activeResponse?.pages.flatMap((page) => page.data) ?? []
+  const safeProducts = useMemo(
+    () => products.filter((item): item is ProductInput => Boolean(item)),
+    [products],
+  )
   const totalCount = activeResponse?.pages[0]?.total ?? products.length
   const isLoading = isSearching ? isSearchLoading : isAllLoading
   const isError = isSearching ? isSearchError : isAllError
@@ -137,10 +142,10 @@ export default function MainPage() {
   )
   const filteredProducts = useMemo(() => {
     if (!hasActiveFilters) {
-      return products
+      return safeProducts
     }
 
-    return products.filter((product) => {
+    return safeProducts.filter((product) => {
       const matchesGender =
         filters.성별.length === 0 ||
         (product.gender && filters.성별.includes(product.gender))
@@ -180,7 +185,7 @@ export default function MainPage() {
         matchesCategorySub
       )
     })
-  }, [categoryMain, categorySub, filters, hasActiveFilters, products])
+  }, [categoryMain, categorySub, filters, hasActiveFilters, safeProducts])
   const displayCount = hasActiveFilters
     ? filteredProducts.length
     : totalCount

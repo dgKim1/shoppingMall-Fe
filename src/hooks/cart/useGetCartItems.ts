@@ -7,16 +7,18 @@ export interface GetCartItemsResponse {
   data: CartItemResponse["data"][];
 }
 
-const getCartItems = async () => {
-  const { data } = await api.get("/cart");
+const getCartItems = async (userId?: string) => {
+  const { data } = await api.get("/cart", {
+    params: { userId },
+  });
   return data as GetCartItemsResponse;
 };
 
-const useGetCartItems = (options = {}) =>
+const useGetCartItems = (options: { enabled?: boolean; userId?: string } = {}) =>
   useQuery({
-    queryKey: ["cart", "items"],
-    queryFn: getCartItems,
-    ...options,
+    queryKey: ["cart", "items", options.userId],
+    queryFn: () => getCartItems(options.userId),
+    enabled: Boolean(options.userId) && (options.enabled ?? true),
   });
 
 export default useGetCartItems;

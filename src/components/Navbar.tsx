@@ -4,7 +4,8 @@ import { Button, Dropdown } from '../common'
 import { linkBase, MEGA_MENU } from '../const/NavBar/const'
 import { buildCategoryQuery } from '../utils/query'
 import useLogout from '../hooks/auth/useLogout'
-import { clearAuth, isAuthenticated } from '../utils/auth'
+import useGetCartItems from '../hooks/cart/useGetCartItems'
+import { useAuth } from '../context/AuthContext'
 export type MegaMenuKey = keyof typeof MEGA_MENU
 export default function Navbar() {
   const headerRef = useRef<HTMLElement>(null)
@@ -12,9 +13,15 @@ export default function Navbar() {
   const [isVisible, setIsVisible] = useState(true)
   const [offset, setOffset] = useState(0)
   const [activeMenu, setActiveMenu] = useState<MegaMenuKey | null>(null)
-  const [loggedIn, setLoggedIn] = useState(isAuthenticated())
+  const { token, user, clearAuth } = useAuth()
   const [searchValue, setSearchValue] = useState('')
   const navigate = useNavigate()
+  const loggedIn = Boolean(token)
+  const { data: cartResponse } = useGetCartItems({
+    enabled: loggedIn,
+    userId: user?._id ?? undefined,
+  })
+  const cartCount = cartResponse?.data?.length ?? 0
   const logoutMutation = useLogout({
     onSuccess: () => {
       clearAuth()
@@ -67,15 +74,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  useEffect(() => {
-    const handleAuthChange = () => setLoggedIn(isAuthenticated())
-    window.addEventListener('auth:change', handleAuthChange)
-    window.addEventListener('storage', handleAuthChange)
-    return () => {
-      window.removeEventListener('auth:change', handleAuthChange)
-      window.removeEventListener('storage', handleAuthChange)
-    }
-  }, [])
 
   return (
     <header
@@ -154,7 +152,7 @@ export default function Navbar() {
             type="button"
             variant="ghost"
             size="sm"
-            className="h-9 w-9 rounded-full p-0"
+            className="relative h-9 w-9 rounded-full p-0"
             aria-label="찜"
           >
             <svg
@@ -176,6 +174,7 @@ export default function Navbar() {
             size="sm"
             className="h-9 w-9 rounded-full p-0"
             aria-label="장바구니"
+            onClick={() => navigate('/cart')}
           >
             <svg
               aria-hidden="true"
@@ -190,6 +189,11 @@ export default function Navbar() {
               <path d="M7 7h10l1 10H6L7 7z" />
               <path d="M9 7V6a3 3 0 0 1 6 0v1" />
             </svg>
+            {cartCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-slate-900 px-1 text-[10px] font-semibold text-white">
+                {cartCount}
+              </span>
+            )}
           </Button>
           <Dropdown
             items={

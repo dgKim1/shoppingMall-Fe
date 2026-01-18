@@ -13,7 +13,7 @@ type GoogleLoginPayload = {
 
 const persistToken = (data: AuthResponse) => {
   if (data?.token) {
-    sessionStorage.setItem("token", data.token);
+    localStorage.setItem("token", data.token);
   }
 };
 

@@ -2,15 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useLoginWithEmail from '../../hooks/auth/useLoginWithEmail'
 import useLoginWithGoogle from '../../hooks/auth/useLoginWithGoogle'
-import { setAuth } from '../../utils/auth'
+import { useAuth } from '../../context/AuthContext'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const { setAuth } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   type AuthResponse = {
     status: string
-    user: unknown
+    user: { _id?: string }
     token: string
   }
 
