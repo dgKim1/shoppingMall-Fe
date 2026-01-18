@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../utils/api";
-import type { ProductInput } from "../../type/product";
 
 export interface CartItemPayload {
   productId: string;
@@ -14,7 +13,7 @@ export interface CartItemResponse {
   data: {
     _id: string;
     cartId: string;
-    productId: string | ProductInput;
+    productId: string;
     size: string;
     color?: string;
     quantity: number;

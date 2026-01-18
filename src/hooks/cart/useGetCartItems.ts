@@ -1,10 +1,11 @@
+import type { ProductType } from './../../type/product';
 import { useQuery } from "@tanstack/react-query";
 import type { CartItemResponse } from "./useAddToCart";
 import api from "../../utils/api";
 
 export interface GetCartItemsResponse {
   status: string;
-  data: CartItemResponse["data"][];
+  data: (CartItemResponse["data"] & { product?: ProductType  })[];
 }
 
 const getCartItems = async (userId?: string) => {
