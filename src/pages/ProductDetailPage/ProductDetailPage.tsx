@@ -53,7 +53,7 @@ export default function ProductDetailPage() {
         <>
           <div className="grid gap-12 lg:grid-cols-[72px_1fr_360px]">
             <div className="hidden flex-col gap-3 lg:flex">
-              {thumbnails.map((thumbnail, index) => (
+              {thumbnails.map((thumbnail: string | null, index: number) => (
                 <button
                   key={index}
                   type="button"
@@ -144,7 +144,7 @@ export default function ProductDetailPage() {
                   color
                 </p>
                 <div className="mt-3 flex gap-3">
-                  {(product?.color ?? []).map((color) => (
+                  {(product?.color ?? []).map((color: string) => (
                     <button
                       key={color}
                       type="button"
