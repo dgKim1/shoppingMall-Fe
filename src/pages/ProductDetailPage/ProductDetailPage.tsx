@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { CartIcon, HeartIcon } from '../../common'
+import useAddToCart from '../../hooks/cart/useAddToCart'
 import useGetProductBySku from '../../hooks/product/useGetProductBySku'
 
 export default function ProductDetailPage() {
@@ -12,6 +14,10 @@ export default function ProductDetailPage() {
     [images],
   )
   const [activeIndex, setActiveIndex] = useState(0)
+  const [selectedSize, setSelectedSize] = useState<string | null>(null)
+  const [selectedColor, setSelectedColor] = useState<string | null>(null)
+  const [cartError, setCartError] = useState<string | null>(null)
+  const addToCart = useAddToCart()
   const formatPrice = (price?: number) =>
     typeof price === 'number'
       ? `${new Intl.NumberFormat('ko-KR').format(price)} 원`
@@ -21,6 +27,19 @@ export default function ProductDetailPage() {
   useEffect(() => {
     setActiveIndex(0)
   }, [images.length])
+
+  useEffect(() => {
+    setSelectedSize(null)
+    setSelectedColor(null)
+    setCartError(null)
+  }, [product?.sku])
+
+  const sizeOptions = useMemo(() => {
+    if (product?.stock) {
+      return Object.keys(product.stock)
+    }
+    return ['2T', '3T', '4T', '5T', '6T', '7T']
+  }, [product?.stock])
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-16">
@@ -125,18 +144,29 @@ export default function ProductDetailPage() {
                   color
                 </p>
                 <div className="mt-3 flex gap-3">
-                  <button
-                    type="button"
-                    className={`h-14 w-14 rounded-xl border border-slate-200 ${
-                      product?.color?.[0] ?? 'bg-slate-200'
-                    }`}
-                    aria-label="color option 1"
-                  />
-                  <button
-                    type="button"
-                    className="h-14 w-14 rounded-xl border border-slate-400 bg-slate-200"
-                    aria-label="color option 2"
-                  />
+                  {(product?.color ?? []).map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => {
+                        setSelectedColor(color)
+                        setCartError(null)
+                      }}
+                      className={`relative flex h-14 w-14 items-center justify-center rounded-xl border ${
+                        selectedColor === color
+                          ? 'border-slate-900 ring-2 ring-slate-900'
+                          : 'border-slate-200'
+                      } ${color}`}
+                      aria-pressed={selectedColor === color}
+                      aria-label={`색상 ${color.replace('bg-', '')}`}
+                    >
+                      {selectedColor === color && (
+                        <span className="text-xs font-semibold text-white drop-shadow">
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -153,11 +183,19 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-3">
-                  {['2T', '3T', '4T', '5T', '6T', '7T'].map((size) => (
+                  {sizeOptions.map((size) => (
                     <button
                       key={size}
                       type="button"
-                      className="rounded-lg border border-slate-200 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
+                      onClick={() => {
+                        setSelectedSize(size)
+                        setCartError(null)
+                      }}
+                      className={`rounded-lg border py-2 text-sm font-semibold transition ${
+                        selectedSize === size
+                          ? 'border-slate-900 bg-slate-900 text-white'
+                          : 'border-slate-200 text-slate-700 hover:border-slate-400'
+                      }`}
                     >
                       {size}
                     </button>
@@ -168,16 +206,52 @@ export default function ProductDetailPage() {
               <div className="space-y-3">
                 <button
                   type="button"
-                  className="h-12 w-full rounded-full bg-slate-900 text-sm font-semibold text-white"
+                  className="relative flex h-12 w-full items-center justify-center rounded-full bg-slate-900 text-sm font-semibold leading-none text-white"
+                  onClick={() => {
+                    if (!product?._id) {
+                      setCartError('상품 정보를 찾을 수 없습니다.')
+                      return
+                    }
+                    if (!selectedSize) {
+                      setCartError('사이즈를 선택해 주세요.')
+                      return
+                    }
+                    if (!selectedColor) {
+                      setCartError('색상을 선택해 주세요.')
+                      return
+                    }
+                    setCartError(null)
+                    addToCart.mutate({
+                      productId: product._id,
+                      size: selectedSize,
+                      color: selectedColor,
+                      quantity: 1,
+                    })
+                  }}
+                  disabled={addToCart.isPending}
                 >
-                  장바구니
+                  <span className="absolute left-5 flex h-5 w-5 items-center justify-center">
+                    <CartIcon className="h-8 w-8" />
+                  </span>
+                  {addToCart.isPending ? '담는 중...' : '장바구니'}
                 </button>
                 <button
                   type="button"
-                  className="h-12 w-full rounded-full border border-slate-200 text-sm font-semibold text-slate-700"
+                  className="relative flex h-12 w-full items-center justify-center rounded-full border border-slate-200 text-sm font-semibold leading-none text-slate-700"
                 >
-                  위시리스트 ♡
+                  <span className="absolute left-5 flex h-5 w-5 items-center justify-center">
+                    <HeartIcon className="h-5 w-5" />
+                  </span>
+                  위시리스트
                 </button>
+                {cartError && (
+                  <p className="text-xs text-rose-500">{cartError}</p>
+                )}
+                {addToCart.isError && (
+                  <p className="text-xs text-rose-500">
+                    장바구니 담기에 실패했습니다.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2 text-sm text-slate-600">

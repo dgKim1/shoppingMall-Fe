@@ -1,9 +1,10 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../utils/api";
 
 export interface CartItemPayload {
   productId: string;
   size: string;
+  color: string;
   quantity: number;
 }
 
@@ -14,6 +15,7 @@ export interface CartItemResponse {
     cartId: string;
     productId: string;
     size: string;
+    color?: string;
     quantity: number;
   };
 }
@@ -23,10 +25,14 @@ const addToCart = async (payload: CartItemPayload) => {
   return data as CartItemResponse;
 };
 
-const useAddToCart = (options = {}) =>
-  useMutation({
+const useAddToCart = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
     mutationFn: addToCart,
-    ...options,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cart", "items"] });
+    },
   });
+};
 
 export default useAddToCart;

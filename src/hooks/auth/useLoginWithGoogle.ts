@@ -1,17 +1,26 @@
 import { useMutation } from "@tanstack/react-query";
 import api from "../../utils/api";
 
-const persistToken = (data) => {
-  const token = data?.token || data?.accessToken;
-  if (token) {
-    sessionStorage.setItem("token", token);
+type AuthResponse = {
+  status: string;
+  user: unknown;
+  token: string;
+};
+
+type GoogleLoginPayload = {
+  idToken: string;
+};
+
+const persistToken = (data: AuthResponse) => {
+  if (data?.token) {
+    localStorage.setItem("token", data.token);
   }
 };
 
-const loginWithGoogle = async ({ idToken }) => {
+const loginWithGoogle = async ({ idToken }: GoogleLoginPayload) => {
   const { data } = await api.post("/auth/google", { idToken });
-  persistToken(data);
-  return data;
+  persistToken(data as AuthResponse);
+  return data as AuthResponse;
 };
 
 const useLoginWithGoogle = (options = {}) =>

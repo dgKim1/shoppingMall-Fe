@@ -10,6 +10,7 @@ import NewProductPage from './pages/NewProductPage/NewProductPage'
 import MenProductPage from './pages/MenProductPage/MenProductPage'
 import WomenProductPage from './pages/WomenProductPage/WomenProductPage'
 import KidsProductPage from './pages/KidsProductPage/KidsProductPage'
+import LoginPage from './pages/LoginPage/LoginPage'
 
 function Layout({ children }: { children: ReactNode }) {
   return (
@@ -86,6 +87,14 @@ function App() {
           element={
             <Layout>
               <OrderPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <Layout>
+              <LoginPage />
             </Layout>
           }
         />

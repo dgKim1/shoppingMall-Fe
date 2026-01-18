@@ -1,4 +1,4 @@
-export interface ProductInput {
+export interface ProductType {
   _id?: string;
   sku: string;
   name: string;
