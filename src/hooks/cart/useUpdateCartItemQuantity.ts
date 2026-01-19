@@ -1,11 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../utils/api";
 
-export interface RemoveCartItemByIdPayload {
+export interface UpdateCartItemQuantityPayload {
   id: string;
+  quantity: number;
 }
 
-export interface RemoveCartItemByIdResponse {
+export interface UpdateCartItemQuantityResponse {
   status: string;
   data: {
     _id: string;
@@ -17,15 +18,18 @@ export interface RemoveCartItemByIdResponse {
   };
 }
 
-const removeCartItemById = async ({ id }: RemoveCartItemByIdPayload) => {
-  const { data } = await api.delete(`/cart/item/${id}`);
-  return data as RemoveCartItemByIdResponse;
+const updateCartItemQuantity = async ({
+  id,
+  quantity,
+}: UpdateCartItemQuantityPayload) => {
+  const { data } = await api.patch(`/cart/item/${id}`, { quantity });
+  return data as UpdateCartItemQuantityResponse;
 };
 
-const useRemoveCartItemById = (options = {}) => {
+const useUpdateCartItemQuantity = (options = {}) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: removeCartItemById,
+    mutationFn: updateCartItemQuantity,
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: ["cart", "items"] });
       if (typeof options === "object" && "onSuccess" in options) {
@@ -36,4 +40,4 @@ const useRemoveCartItemById = (options = {}) => {
   });
 };
 
-export default useRemoveCartItemById;
+export default useUpdateCartItemQuantity;
