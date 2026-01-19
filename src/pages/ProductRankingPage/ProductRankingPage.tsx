@@ -1,5 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import useGetAllProducts from '../../hooks/product/useGetAllProducts'
+import useAddToWishlist from '../../hooks/wishlist/useAddToWishlist'
+import useGetWishlist from '../../hooks/wishlist/useGetWishlist'
+import useRemoveFromWishlist from '../../hooks/wishlist/useRemoveFromWishlist'
+import { useAuth } from '../../context/AuthContext'
 import ProductRankingCard from './component/ProductRankingCard'
 
 type ProductRankingPageProps = {
@@ -17,6 +22,8 @@ export default function ProductRankingPage({
   categoryMain,
   categorySub,
 }: ProductRankingPageProps) {
+  const navigate = useNavigate()
+  const { token } = useAuth()
   const { data: productsResponse, isLoading, isError } = useGetAllProducts({
     limit: 100,
     sort,
@@ -24,22 +31,32 @@ export default function ProductRankingPage({
     categoryMain,
     categorySub,
   })
+  const { data: wishlistResponse } = useGetWishlist(Boolean(token))
+  const addToWishlist = useAddToWishlist()
+  const removeFromWishlist = useRemoveFromWishlist()
   const products = productsResponse?.pages.flatMap((page) => page.data) ?? []
   const rankedProducts = useMemo(() => products.slice(0, 100), [products])
-  const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const formatPrice = (price: number) =>
     `${new Intl.NumberFormat('ko-KR').format(price)} 원`
 
-  const toggleFavorite = (sku: string) => {
-    setFavorites((prev) => {
-      const next = new Set(prev)
-      if (next.has(sku)) {
-        next.delete(sku)
-      } else {
-        next.add(sku)
-      }
-      return next
-    })
+  const wishlistKeySet = useMemo(() => {
+    return new Set(
+      (wishlistResponse?.data ?? [])
+        .map((item) => item._id ?? item.sku)
+        .filter((value): value is string => Boolean(value)),
+    )
+  }, [wishlistResponse?.data])
+
+  const toggleFavorite = (productId: string, isFavorite: boolean) => {
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    if (isFavorite) {
+      removeFromWishlist.mutate({ productId })
+    } else {
+      addToWishlist.mutate({ productId })
+    }
   }
 
   return (
@@ -64,7 +81,7 @@ export default function ProductRankingPage({
               key={`${product.sku}-${index}`}
               product={product}
               rank={index + 1}
-              isFavorite={favorites.has(product.sku)}
+              isFavorite={wishlistKeySet.has(product._id ?? product.sku)}
               priceLabel={formatPrice(product.price)}
               onToggleFavorite={toggleFavorite}
             />
