@@ -292,7 +292,7 @@ export default function MainPage() {
           )}
           {isError && (
             <p className="text-sm text-rose-500 sm:col-span-2 lg:col-span-3">
-              상품을 불러오지 못했습니다.
+              상품을 불러오지 못했습니다. 로그인 후 다시 시도해 주세요.
             </p>
           )}
           {!isLoading &&

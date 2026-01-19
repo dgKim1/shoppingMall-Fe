@@ -32,6 +32,7 @@ export default function LoginPage() {
   const [googleError, setGoogleError] = useState<string | null>(null)
   const [googleTick, setGoogleTick] = useState(0)
   const googleRetryRef = useRef(0)
+  const [googleButtonWidth, setGoogleButtonWidth] = useState(0)
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
   const googleScriptSrc =
     import.meta.env.VITE_GOOGLE_SCRIPT_SRC
@@ -110,9 +111,21 @@ export default function LoginPage() {
       theme: 'outline',
       size: 'large',
       shape: 'pill',
-      width: '320',
+      width: googleButtonWidth > 0 ? String(googleButtonWidth) : '320',
     })
-  }, [googleReady, googleTick, googleClientId, loginWithGoogle])
+  }, [googleReady, googleTick, googleClientId, loginWithGoogle, googleButtonWidth])
+
+  useEffect(() => {
+    if (!googleButtonRef.current) {
+      return
+    }
+    const updateWidth = () => {
+      setGoogleButtonWidth(googleButtonRef.current?.offsetWidth ?? 0)
+    }
+    updateWidth()
+    window.addEventListener('resize', updateWidth)
+    return () => window.removeEventListener('resize', updateWidth)
+  }, [])
 
   return (
     <section className="mx-auto max-w-md px-6 py-16">
@@ -152,9 +165,7 @@ export default function LoginPage() {
         {loginWithEmail.isError && (
           <p className="text-sm text-rose-500">Email login failed.</p>
         )}
-      </form>
-
-      <div className="my-8 h-px bg-slate-200" />
+        <div className="my-8 h-px bg-slate-200" />
 
       <div className="space-y-3">
         {!googleReady && !googleError && (
@@ -166,7 +177,7 @@ export default function LoginPage() {
             Loading Google login...
           </button>
         )}
-        <div ref={googleButtonRef} className="flex justify-center" />
+        <div ref={googleButtonRef} className="flex w-full justify-center" />
         {loginWithGoogle.isPending && (
           <p className="text-sm text-slate-500">Signing in with Google...</p>
         )}
@@ -178,6 +189,9 @@ export default function LoginPage() {
           </p>
         )}
       </div>
+      </form>
+
+      
     </section>
   )
 }
