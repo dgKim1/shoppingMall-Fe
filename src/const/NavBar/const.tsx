@@ -2,6 +2,7 @@ export const linkBase =
   'px-3 py-2 text-sm uppercase tracking-wide transition-colors'
 
 export const MEGA_MENU = {
+  New: [],
   Men: [
     { title: '의류', items: ['전체', '아우터', '상의', '하의', '트레이닝'] },
     { title: '신발', items: ['전체', '스니커즈', '러닝', '농구', '슬리퍼'] },

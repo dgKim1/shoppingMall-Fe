@@ -11,6 +11,7 @@ type DropdownProps = {
   label?: string
   items: DropdownItem[]
   align?: 'left' | 'right'
+  position?: 'top' | 'bottom'
   trigger?: (props: {
     isOpen: boolean
     toggle: () => void
@@ -22,6 +23,7 @@ export default function Dropdown({
   label,
   items,
   align = 'right',
+  position = 'bottom',
   trigger,
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -68,7 +70,9 @@ export default function Dropdown({
       {isOpen && (
         <div
           role="menu"
-          className={`absolute z-20 mt-2 w-40 rounded-xl border border-slate-200 bg-white p-2 text-sm text-slate-600 shadow-lg ${
+          className={`absolute z-20 w-40 rounded-xl border border-slate-200 bg-white p-2 text-sm text-slate-600 shadow-lg ${
+            position === 'bottom' ? 'mt-2' : 'mb-2'
+          } ${position === 'bottom' ? 'top-full' : 'bottom-full'} ${
             align === 'right' ? 'right-0' : 'left-0'
           }`}
         >

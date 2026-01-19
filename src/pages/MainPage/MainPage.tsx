@@ -6,6 +6,7 @@ import type { ProductType } from '../../type/product'
 import useGetAllProducts from '../../hooks/product/useGetAllProducts'
 import useSearchProducts from '../../hooks/product/useSearchProducts'
 import ProductCard from './component/ProductCard'
+import AdBanner from './component/AdBanner'
 
 export default function MainPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -21,7 +22,7 @@ export default function MainPage() {
     limit: 9,
     sort: sortOption === '선택안함' ? undefined : sortOption,
   })
-  const [searchTerm, setSearchTerm] = useState<string | null>(null)
+  const searchTerm = searchParams.get('name')
   const isSearching = Boolean(searchTerm)
   const {
     data: searchProductsResponse,
@@ -53,77 +54,35 @@ export default function MainPage() {
   const formatPrice = (price: number) =>
     `${new Intl.NumberFormat('ko-KR').format(price)} 원`
   const sentinelRef = useRef<HTMLDivElement | null>(null)
-  const [filters, setFilters] = useState<FilterState>({
-    성별: [],
-    스포츠: [],
-    가격대: [],
-    브랜드: [],
-    색상: [],
-  })
-  const [categoryMain, setCategoryMain] = useState<string | null>(null)
-  const [categorySub, setCategorySub] = useState<string | null>(null)
+  const categoryMain = searchParams.get('categoryMain')
+  const categorySub = searchParams.get('categorySub')
   const [isSidebarVisible, setIsSidebarVisible] = useState(true)
-  const syncingFromUrlRef = useRef(false)
 
   const toggleFilter = (group: keyof FilterState, value: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      [group]: prev[group].includes(value)
-        ? prev[group].filter((item) => item !== value)
-        : [...prev[group], value],
-    }))
+    const nextParams = new URLSearchParams(searchParams)
+    const currentValues = nextParams.get(group)?.split(',').filter(Boolean) ?? []
+    const nextValues = currentValues.includes(value)
+      ? currentValues.filter((item) => item !== value)
+      : [...currentValues, value]
+    if (nextValues.length > 0) {
+      nextParams.set(group, nextValues.join(','))
+    } else {
+      nextParams.delete(group)
+    }
+    setSearchParams(nextParams, { replace: true })
   }
 
-  useEffect(() => {
-    syncingFromUrlRef.current = true
+  const filters = useMemo<FilterState>(() => {
     const readValues = (key: keyof FilterState) =>
       searchParams.get(key)?.split(',').filter(Boolean) ?? []
-
-    setFilters({
+    return {
       성별: readValues('성별'),
       스포츠: readValues('스포츠'),
       가격대: readValues('가격대'),
       브랜드: readValues('브랜드'),
       색상: readValues('색상'),
-    })
-    setCategoryMain(searchParams.get('categoryMain'))
-    setCategorySub(searchParams.get('categorySub'))
-    setSearchTerm(searchParams.get('name'))
+    }
   }, [searchParams])
-
-  useEffect(() => {
-    if (syncingFromUrlRef.current) {
-      syncingFromUrlRef.current = false
-      return
-    }
-
-    const nextParams = new URLSearchParams()
-    ;(Object.keys(filters) as (keyof FilterState)[]).forEach((key) => {
-      if (filters[key].length > 0) {
-        nextParams.set(key, filters[key].join(','))
-      }
-    })
-    if (categoryMain) {
-      nextParams.set('categoryMain', categoryMain)
-    }
-    if (categorySub) {
-      nextParams.set('categorySub', categorySub)
-    }
-    if (searchTerm) {
-      nextParams.set('name', searchTerm)
-    }
-
-    if (nextParams.toString() !== searchParams.toString()) {
-      setSearchParams(nextParams, { replace: true })
-    }
-  }, [
-    categoryMain,
-    categorySub,
-    filters,
-    searchParams,
-    searchTerm,
-    setSearchParams,
-  ])
 
   const parsePriceRange = (label: string) => {
     const numbers = label
@@ -344,25 +303,7 @@ export default function MainPage() {
             </p>
           )}
 
-          <article className="sm:col-span-2 lg:col-span-3">
-            <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-              <div className="aspect-[16/9] w-full bg-slate-200" />
-              <div className="flex flex-col justify-center space-y-3 bg-slate-900 px-6 py-10 text-white">
-                <p className="text-xs uppercase tracking-[0.25em] text-white/70">
-                  Lookbook
-                </p>
-                <h3 className="text-2xl font-semibold">
-                  astrogabber 이야기
-                </h3>
-                <p className="text-sm text-white/70">
-                  레트로 그린 컬러로 완성한 시즌 무드.
-                </p>
-                <Button variant="outline" size="sm" className="border-white/40 text-white hover:bg-white/10">
-                  스토리 보기
-                </Button>
-              </div>
-            </div>
-          </article>
+          <AdBanner />
         </div>
       </div>
     </section>
