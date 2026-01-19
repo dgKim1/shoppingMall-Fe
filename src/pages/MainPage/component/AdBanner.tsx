@@ -1,4 +1,5 @@
 import { Button } from '../../../common'
+import bannerImage from '../../../assets/banner.jpg'
 
 export default function AdBanner() {
   return (
@@ -6,7 +7,7 @@ export default function AdBanner() {
       <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
         <div className="aspect-[16/9] w-full overflow-hidden rounded-2xl bg-slate-200">
           <img
-            src="/src/assets/banner.jpg"
+            src={bannerImage}
             alt="lookbook banner"
             className="h-full w-full object-cover"
             loading="lazy"

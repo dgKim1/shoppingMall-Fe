@@ -60,21 +60,35 @@ export default function MainPage() {
 
   const toggleFilter = (group: keyof FilterState, value: string) => {
     const nextParams = new URLSearchParams(searchParams)
-    const currentValues = nextParams.get(group)?.split(',').filter(Boolean) ?? []
-    const nextValues = currentValues.includes(value)
-      ? currentValues.filter((item) => item !== value)
-      : [...currentValues, value]
-    if (nextValues.length > 0) {
-      nextParams.set(group, nextValues.join(','))
+    const currentValues = nextParams.getAll(group)
+    const exists = currentValues.includes(value)
+    nextParams.delete(group)
+    if (exists) {
+      currentValues
+        .filter((item) => item !== value)
+        .forEach((item) => nextParams.append(group, item))
     } else {
-      nextParams.delete(group)
+      currentValues.forEach((item) => nextParams.append(group, item))
+      nextParams.append(group, value)
     }
     setSearchParams(nextParams, { replace: true })
   }
 
   const filters = useMemo<FilterState>(() => {
-    const readValues = (key: keyof FilterState) =>
-      searchParams.get(key)?.split(',').filter(Boolean) ?? []
+    const readValues = (key: keyof FilterState) => {
+      const values = searchParams.getAll(key)
+      if (values.length > 0) {
+        return values
+      }
+      const raw = searchParams.get(key)
+      if (!raw) {
+        return []
+      }
+      if (raw.includes('|')) {
+        return raw.split('|').map((item) => item.trim()).filter(Boolean)
+      }
+      return [raw]
+    }
     return {
       성별: readValues('성별'),
       스포츠: readValues('스포츠'),
