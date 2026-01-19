@@ -65,6 +65,34 @@ export default function ProductDetailPage() {
     }
     return mapping[value] ?? value
   }
+  const sizeInventory = product?.stock ?? null
+  const isSizeInStock = (size: string) => {
+    if (!sizeInventory) {
+      return true
+    }
+    return (sizeInventory[size] ?? 0) > 0
+  }
+  const getApiErrorMessage = (error: unknown) => {
+    if (!error) {
+      return null
+    }
+    const responseMessage =
+      (error as { response?: { data?: { message?: string; error?: string } } })
+        .response?.data?.message ??
+      (error as { response?: { data?: { message?: string; error?: string } } })
+        .response?.data?.error
+    if (responseMessage) {
+      return responseMessage
+    }
+    if (typeof error === 'string') {
+      return error
+    }
+    if (error instanceof Error && error.message) {
+      return error.message
+    }
+    return null
+  }
+  const addToCartErrorMessage = getApiErrorMessage(addToCart.error)
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-16">
@@ -208,23 +236,29 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-3">
-                  {sizeOptions.map((size) => (
-                    <button
-                      key={size}
-                      type="button"
-                      onClick={() => {
-                        setSelectedSize(size)
-                        setCartError(null)
-                      }}
-                      className={`rounded-lg border py-2 text-sm font-semibold transition ${
-                        selectedSize === size
-                          ? 'border-slate-900 bg-slate-900 text-white'
-                          : 'border-slate-200 text-slate-700 hover:border-slate-400'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
+                  {sizeOptions.map((size) => {
+                    const inStock = isSizeInStock(size)
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => {
+                          if (inStock) {
+                            setSelectedSize(size)
+                            setCartError(null)
+                          }
+                        }}
+                        disabled={!inStock}
+                        className={`rounded-lg border py-2 text-sm font-semibold transition ${
+                          selectedSize === size && inStock
+                            ? 'border-slate-900 bg-slate-900 text-white'
+                            : 'border-slate-200 text-slate-700 hover:border-slate-400'
+                        } ${!inStock ? 'cursor-not-allowed opacity-40' : ''}`}
+                      >
+                        {size}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -239,6 +273,10 @@ export default function ProductDetailPage() {
                     }
                     if (!selectedSize) {
                       setCartError('사이즈를 선택해 주세요.')
+                      return
+                    }
+                    if (!isSizeInStock(selectedSize)) {
+                      setCartError('선택한 사이즈는 품절입니다.')
                       return
                     }
                     if (!selectedColor) {
@@ -286,7 +324,7 @@ export default function ProductDetailPage() {
                 )}
                 {addToCart.isError && (
                   <p className="text-xs text-rose-500">
-                    장바구니 담기에 실패했습니다.
+                    {addToCartErrorMessage ?? '장바구니 담기에 실패했습니다.'}
                   </p>
                 )}
                 {addToWishlist.isError && (

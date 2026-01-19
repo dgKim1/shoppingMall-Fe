@@ -32,6 +32,9 @@ export default function LoginPage() {
   const [googleError, setGoogleError] = useState<string | null>(null)
   const [googleTick, setGoogleTick] = useState(0)
   const googleRetryRef = useRef(0)
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+  const googleScriptSrc =
+    import.meta.env.VITE_GOOGLE_SCRIPT_SRC
 
   const handleEmailSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -39,9 +42,7 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
-    if (!clientId) {
-      setGoogleError('Google Client ID is not configured.')
+    if (!googleClientId) {
       return
     }
 
@@ -50,7 +51,7 @@ export default function LoginPage() {
     )
     if (!existingScript) {
       const script = document.createElement('script')
-      script.src = import.meta.env.VITE_GOOGLE_SCRIPT_SRC
+      script.src = googleScriptSrc
       script.async = true
       script.defer = true
       script.dataset.googleIdentity = 'true'
@@ -63,20 +64,25 @@ export default function LoginPage() {
       document.body.appendChild(script)
     } else {
       if (window.google?.accounts?.id) {
-        setGoogleReady(true)
-        setGoogleError(null)
-      } else {
-        existingScript.addEventListener('load', () => {
+        Promise.resolve().then(() => {
           setGoogleReady(true)
           setGoogleError(null)
         })
+      } else {
+        existingScript.addEventListener(
+          'load',
+          () => {
+            setGoogleReady(true)
+            setGoogleError(null)
+          },
+          { once: true },
+        )
       }
     }
-  }, [])
+  }, [googleClientId, googleScriptSrc])
 
   useEffect(() => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
-    if (!googleReady || !clientId || !googleButtonRef.current) {
+    if (!googleReady || !googleClientId || !googleButtonRef.current) {
       return
     }
 
@@ -87,12 +93,15 @@ export default function LoginPage() {
         setTimeout(() => setGoogleTick((prev) => prev + 1), 200)
         return
       }
-      setGoogleError('Google Identity SDK is not available.')
+      setTimeout(
+        () => setGoogleError('Google Identity SDK is not available.'),
+        0,
+      )
       return
     }
 
     googleAccounts.initialize({
-      client_id: clientId,
+      client_id: googleClientId,
       callback: (response) => {
         loginWithGoogle.mutate({ idToken: response.credential })
       },
@@ -103,7 +112,7 @@ export default function LoginPage() {
       shape: 'pill',
       width: '320',
     })
-  }, [googleReady, googleTick, loginWithGoogle])
+  }, [googleReady, googleTick, googleClientId, loginWithGoogle])
 
   return (
     <section className="mx-auto max-w-md px-6 py-16">
@@ -148,13 +157,24 @@ export default function LoginPage() {
       <div className="my-8 h-px bg-slate-200" />
 
       <div className="space-y-3">
+        {!googleReady && !googleError && (
+          <button
+            type="button"
+            className="h-11 w-full rounded-full border border-slate-200 text-sm font-semibold text-slate-600"
+            disabled
+          >
+            Loading Google login...
+          </button>
+        )}
         <div ref={googleButtonRef} className="flex justify-center" />
         {loginWithGoogle.isPending && (
           <p className="text-sm text-slate-500">Signing in with Google...</p>
         )}
-        {(loginWithGoogle.isError || googleError) && (
+        {(loginWithGoogle.isError || googleError || !googleClientId) && (
           <p className="text-sm text-rose-500">
-            {googleError ?? 'Google login failed.'}
+            {!googleClientId
+              ? 'Google Client ID is not configured.'
+              : googleError ?? 'Google login failed.'}
           </p>
         )}
       </div>
