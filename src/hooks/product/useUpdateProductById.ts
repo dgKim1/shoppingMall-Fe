@@ -1,15 +1,15 @@
 import { useMutation } from "@tanstack/react-query";
 import api from "../../utils/api";
-import type { ProductInput } from "../../type/product";
+import type { ProductType } from "../../type/product";
 
 export interface UpdateProductResponse {
   status: string;
-  data: ProductInput;
+  data: ProductType;
 }
 
 export interface UpdateProductParams {
   id: string;
-  payload: Partial<ProductInput>;
+  payload: Partial<ProductType>;
 }
 
 const updateProductById = async ({ id, payload }: UpdateProductParams) => {

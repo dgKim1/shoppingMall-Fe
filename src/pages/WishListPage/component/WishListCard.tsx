@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { TrashIcon } from '../../../common'
 import type { ProductType } from '../../../type/product'
 import { FaRegTrashAlt } from "react-icons/fa";
 
