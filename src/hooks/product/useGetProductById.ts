@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "../../utils/api";
-import type { ProductInput } from "../../type/product";
+import type { ProductType } from "../../type/product";
 
 export interface ProductDetailResponse {
   status: string;
-  data: ProductInput;
+  data: ProductType;
 }
 
 const getProductById = async (id: string) => {

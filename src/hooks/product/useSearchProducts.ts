@@ -1,10 +1,10 @@
 import { useInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import api from "../../utils/api";
-import type { ProductInput } from "../../type/product";
+import type { ProductType } from "../../type/product";
 
 export interface SearchProductsResponse {
   status: string;
-  data: ProductInput[];
+  data: ProductType[];
   total: number;
   totalPages: number;
   page: number;
