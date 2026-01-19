@@ -1,5 +1,7 @@
 import { FaRegTrashAlt } from 'react-icons/fa'
 import type { ProductType } from '../../../type/product'
+import useRemoveCartItemById from '../../../hooks/cart/useRemoveCartItemById'
+import useUpdateCartItemQuantity from '../../../hooks/cart/useUpdateCartItemQuantity'
 
 type CartCardProps = {
   item: {
@@ -18,6 +20,17 @@ const getProductImage = (product?: ProductType) =>
   product?.image?.[0] ?? null
 
 export default function CartCard({ item }: CartCardProps) {
+  const updateQuantity = useUpdateCartItemQuantity()
+  const removeItem = useRemoveCartItemById()
+  const isUpdating = updateQuantity.isPending || removeItem.isPending
+
+  const handleChangeQuantity = (nextQuantity: number) => {
+    if (nextQuantity < 1) {
+      return
+    }
+    updateQuantity.mutate({ id: item._id, quantity: nextQuantity })
+  }
+
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-4">
@@ -39,12 +52,14 @@ export default function CartCard({ item }: CartCardProps) {
           </p>
         </div>
       </div>
-      <div className="flex items-center justify-between gap-4 sm:justify-end">
+        <div className="flex items-center justify-between gap-4 sm:justify-end">
         <div className="flex items-center rounded-full border border-slate-200">
           <button
             type="button"
             className="h-9 w-9 rounded-full text-lg text-slate-600 transition hover:bg-slate-100"
             aria-label="수량 감소"
+            onClick={() => handleChangeQuantity(item.quantity - 1)}
+            disabled={isUpdating || item.quantity <= 1}
           >
             -
           </button>
@@ -55,6 +70,8 @@ export default function CartCard({ item }: CartCardProps) {
             type="button"
             className="h-9 w-9 rounded-full text-lg text-slate-600 transition hover:bg-slate-100"
             aria-label="수량 증가"
+            onClick={() => handleChangeQuantity(item.quantity + 1)}
+            disabled={isUpdating}
           >
             +
           </button>
@@ -63,6 +80,8 @@ export default function CartCard({ item }: CartCardProps) {
           type="button"
           className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-100"
           aria-label="삭제"
+          onClick={() => removeItem.mutate({ id: item._id })}
+          disabled={isUpdating}
         >
           <FaRegTrashAlt className="h-4 w-4" />
         </button>
