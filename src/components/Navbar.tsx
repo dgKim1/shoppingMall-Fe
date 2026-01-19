@@ -34,6 +34,8 @@ export default function Navbar() {
       navigate('/login')
     },
   })
+  const menuKeys = Object.keys(MEGA_MENU) as MegaMenuKey[]
+  const menuSections = activeMenu ? MEGA_MENU[activeMenu] : null
 
   useEffect(() => {
     const updateOffset = () => {
@@ -89,7 +91,7 @@ export default function Navbar() {
           SelectLife
         </NavLink>
         <div className="Navbar-Menu hidden flex-1 items-center justify-center gap-2 md:flex">
-          {(['New','Men', 'Women', 'Kids'] as MegaMenuKey[]).map((menuKey) => (
+          {menuKeys.map((menuKey) => (
             <div
               key={menuKey}
               className="relative flex"
@@ -215,9 +217,9 @@ export default function Navbar() {
         }}
         onMouseLeave={() => setActiveMenu(null)}
       >
-        {activeMenu && (
+        {menuSections && (
           <div className="grid w-fit grid-cols-[repeat(3,max-content)] gap-10 text-sm text-slate-600">
-            {MEGA_MENU[activeMenu].map((section) => (
+            {menuSections.map((section) => (
               <div key={section.title} className="space-y-3">
                 <p className="text-l font-bold uppercase tracking-[0.2em] text-slate-800">
                   {section.title}
@@ -232,7 +234,7 @@ export default function Navbar() {
                         const query = buildCategoryQuery({
                           categoryMain: section.title,
                           categorySub: item,
-                          personType: activeMenu
+                          personType: activeMenu ?? undefined,
                         })
                         navigate(`/${activeMenu ?? ''}?${query}`)
                         setActiveMenu(null)
