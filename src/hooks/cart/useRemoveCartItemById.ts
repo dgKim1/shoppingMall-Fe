@@ -22,17 +22,13 @@ const removeCartItemById = async ({ id }: RemoveCartItemByIdPayload) => {
   return data as RemoveCartItemByIdResponse;
 };
 
-const useRemoveCartItemById = (options = {}) => {
+const useRemoveCartItemById = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: removeCartItemById,
-    onSuccess: (...args) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart", "items"] });
-      if (typeof options === "object" && "onSuccess" in options) {
-        options.onSuccess?.(...args);
-      }
     },
-    ...options,
   });
 };
 

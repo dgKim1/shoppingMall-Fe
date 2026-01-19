@@ -26,17 +26,13 @@ const updateCartItemQuantity = async ({
   return data as UpdateCartItemQuantityResponse;
 };
 
-const useUpdateCartItemQuantity = (options = {}) => {
+const useUpdateCartItemQuantity = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateCartItemQuantity,
-    onSuccess: (...args) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart", "items"] });
-      if (typeof options === "object" && "onSuccess" in options) {
-        options.onSuccess?.(...args);
-      }
     },
-    ...options,
   });
 };
 
