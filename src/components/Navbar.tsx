@@ -173,6 +173,12 @@ export default function Navbar() {
               isLogIn
                 ? [
                     {
+                      label: '주문 내역',
+                      onSelect: () => {
+                        navigate('/order')
+                      },
+                    },
+                    {
                       label: '로그아웃',
                       onSelect: () => {
                         logoutMutation.mutate()
@@ -188,6 +194,7 @@ export default function Navbar() {
                     },
                   ]
             }
+            position="bottom"
             trigger={({ buttonProps }) => (
               <Button
                 {...buttonProps}
