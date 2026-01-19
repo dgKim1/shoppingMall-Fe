@@ -1,7 +1,8 @@
 import useGetCartItems from '../../hooks/cart/useGetCartItems'
 import useCreateOrder from '../../hooks/order/useCreateOrder'
 import { useAuth } from '../../context/AuthContext'
-import type { ProductType } from '../../type/product'
+
+import CartCard from './component/CartCard'
 
 export default function CartPage() {
   const { user } = useAuth()
@@ -10,13 +11,7 @@ export default function CartPage() {
   })
   const createOrder = useCreateOrder()
   const cartItems = cartData?.data ?? []
-  const getProductLabel = (product?: ProductType) =>
-    product?.name ?? product?._id ?? '알 수 없는 상품'
-
-  const getProductImage = (product?: ProductType) =>
-    product?.image?.[0] ?? null
-
-  console.log("장바구니 데ㅌ이터",cartItems);
+  console.log('장바구니 데이터', cartItems)
   
   return (
     <section className="mx-auto max-w-6xl px-6 py-16">
@@ -28,6 +23,7 @@ export default function CartPage() {
           </p>
         </div>
         <button
+        
           type="button"
           className="h-11 rounded-full bg-slate-900 px-6 text-sm font-semibold text-white"
           onClick={() => {
@@ -60,31 +56,7 @@ export default function CartPage() {
             <p className="text-sm text-slate-500">장바구니가 비어 있습니다.</p>
           )}
           {cartItems.map((item) => (
-            <div
-              key={item._id}
-              className="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-4"
-            >
-              <div className="flex items-center gap-4">
-                {getProductImage(item.product) ? (
-                  <img
-                    src={getProductImage(item.product) as string}
-                    alt={getProductLabel(item.product)}
-                    className="h-16 w-16 rounded-lg object-cover"
-                  />
-                ) : (
-                  <div className="h-16 w-16 rounded-lg bg-slate-100" />
-                )}
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {getProductLabel(item.product)}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    사이즈 {item.size} · 색상 {item.color ?? '-'} · 수량{' '}
-                    {item.quantity}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <CartCard key={item._id} item={item} />
           ))}
         </div>
       )}
