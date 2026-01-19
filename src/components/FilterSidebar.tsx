@@ -1,3 +1,5 @@
+import { useMemo, useState } from 'react'
+import { HiChevronDown, HiChevronUp } from 'react-icons/hi2'
 import { FILTER_GROUPS } from '../const/FilterSidebar/const'
 
 type FilterKey = '성별' | '스포츠' | '가격대' | '브랜드' | '색상'
@@ -19,17 +21,43 @@ export default function FilterSidebar({
   selectedFilters,
   onToggleFilter,
 }: FilterSidebarProps) {
+  const initialOpenState = useMemo(() => {
+    return FILTER_GROUPS.reduce<Record<string, boolean>>((acc, group) => {
+      acc[group.title] = true
+      return acc
+    }, {})
+  }, [])
+  const [openGroups, setOpenGroups] =
+    useState<Record<string, boolean>>(initialOpenState)
+
+  const toggleGroup = (title: string) => {
+    setOpenGroups((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }))
+  }
 
   return (
     <aside className="fade-up space-y-6 text-sm text-slate-600">
       {FILTER_GROUPS.map((group) => (
         <div key={group.title} className="border-b border-slate-200 pb-4">
-          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between text-xs font-semibold uppercase tracking-[0.25em] text-slate-500"
+            onClick={() => toggleGroup(group.title)}
+            aria-expanded={openGroups[group.title]}
+            aria-controls={`filter-group-${group.title}`}
+          >
             <span>{group.title}</span>
-            <span className="text-slate-400">?</span>
-          </div>
-          {'items' in group && (
-            <div className="mt-3 space-y-2">
+            <span className="text-slate-400 cursor-pointer">
+              {openGroups[group.title] ? <HiChevronUp /> : <HiChevronDown />}
+            </span>
+          </button>
+          {'items' in group && openGroups[group.title] && (
+            <div
+              id={`filter-group-${group.title}`}
+              className="mt-3 space-y-2"
+            >
               {group.items.map((item) => (
                 <label
                   key={item}
@@ -50,8 +78,11 @@ export default function FilterSidebar({
               ))}
             </div>
           )}
-          {'colors' in group && (
-            <div className="mt-3 grid grid-cols-4 gap-2">
+          {'colors' in group && openGroups[group.title] && (
+            <div
+              id={`filter-group-${group.title}`}
+              className="mt-3 grid grid-cols-4 gap-2"
+            >
               {group.colors.map((color) => (
                 <button
                   key={color}
