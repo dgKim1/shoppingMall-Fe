@@ -6,7 +6,7 @@ type ProductRankingCardProps = {
   rank: number
   isFavorite: boolean
   priceLabel: string
-  onToggleFavorite: (sku: string) => void
+  onToggleFavorite: (productId: string, isFavorite: boolean) => void
 }
 
 export default function ProductRankingCard({
@@ -36,8 +36,13 @@ export default function ProductRankingCard({
         </span>
         <button
           type="button"
-          onClick={() => onToggleFavorite(product.sku)}
-          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow"
+          onClick={() => {
+            if (product._id) {
+              onToggleFavorite(product._id, isFavorite)
+            }
+          }}
+          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={!product._id}
           aria-pressed={isFavorite}
           aria-label="찜"
         >
